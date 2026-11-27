@@ -6,7 +6,7 @@
 // выбирая запись с бóльшей version (1 — подтверждена, 2 — отменена).
 import { createEvent, createStore } from 'effector';
 import type { Reservation } from '@/shared/api/types';
-import { sessionLost } from '@/entities/session/model';
+import { sessionLost } from '@/entities/session';
 
 export const reservationCommitted = createEvent<Reservation>();
 

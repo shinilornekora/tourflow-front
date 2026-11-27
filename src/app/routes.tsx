@@ -3,7 +3,7 @@
 import { lazy, useEffect } from 'react';
 import type { RouteObject } from 'react-router-dom';
 import { useUnit } from 'effector-react';
-import { appStarted, sessionLost, sessionReceived } from '@/entities/session/model';
+import { appStarted, sessionLost, sessionReceived } from '@/entities/session';
 import { onSessionChange } from '@/shared/api/client';
 import { ErrorPage, ForbiddenPage, NotFoundPage } from '@/pages/not-found';
 import { GuestOnly, RequireAuth, RequireRole } from './guards';

@@ -1,0 +1,1 @@
+export { HotelEditor } from './HotelEditor';
