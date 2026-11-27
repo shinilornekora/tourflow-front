@@ -1,0 +1,1 @@
+import{g as d,Z as m,p as u}from"./index-BiwkzeZN.js";const f=u(),v=d({}).on(f,(e,t)=>({...e,[t.id]:r(e[t.id],t)})).reset(m);function r(e,t){return e&&e.version>t.version?e:t}function p(e,t,c){const o=new Set,s=e.map(n=>{o.add(n.id);const i=t[n.id];return i?r(i,n):n});for(const n of Object.values(t))!o.has(n.id)&&c(n)&&s.unshift(n);return s}export{v as $,p as m,f as r};

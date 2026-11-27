@@ -1,0 +1,1 @@
+import{g as u,a as r,b as t,p as o,M as c}from"./index-BiwkzeZN.js";const m=o(),g=o(),n=r(s=>t.users({...s,page:1})),d=r(s=>t.users({role:"hotel_manager"})),i=u([]).on(n.fx.doneData,(s,e)=>e.items).on(g,(s,e)=>s.map(a=>a.id===e.id?e:a));c({clock:m,target:n.start});export{i as $,n as a,m as b,d as m,g as u};
