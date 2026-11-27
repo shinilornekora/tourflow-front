@@ -16,7 +16,28 @@ SPA для бронирования отелей с тремя ролями: **�
 | Менеджер отеля | Только свои отели: редактирование данных, типы номеров (добавить, изменить, в архив), брони гостей со сводкой и фильтрами, отмена с обязательной причиной, журнал действий                  |
 | Администратор  | Всё, что менеджер, по всем отелям, плюс **добавление новых отелей**, включение и отключение отелей, назначение и снятие менеджеров, смена ролей пользователей                               |
 
-## Запуск
+## Запуск всей системы одной командой (Docker, macOS / Windows / Linux)
+
+Фронтенд и бэкенд поднимаются вместе из репозитория бэкенда [tourflow](https://github.com/shinilornekora/tourflow): его `docker-compose.yml` сам соберёт этот фронтенд прямо из GitHub.
+
+```bash
+git clone https://github.com/shinilornekora/tourflow.git
+cd tourflow
+docker compose up --build
+```
+
+Откройте http://localhost:3000. Подробности и демо-входы — в README бэкенда.
+
+Только фронтенд в Docker (бэкенд уже запущен на этой машине, gateway на :8080):
+
+```bash
+docker build -t tourflow-front .
+docker run --rm -p 3000:80 -e API_UPSTREAM=http://host.docker.internal:8080 tourflow-front
+```
+
+`Dockerfile` двухэтапный: webpack собирает прод-бандл (без демо-кода MSW), nginx раздаёт его и проксирует `/api` в gateway (`nginx/default.conf.template`, адрес задаёт переменная `API_UPSTREAM`). Базовые образы мультиархитектурные: собирается и на Apple Silicon, и на Intel.
+
+## Запуск для разработки
 
 Основной сборщик — **webpack** (`webpack/`: common, dev, prod). Vite оставлен вторым конфигом (`vite.config.ts`), чтобы сравнить настройки.
 
