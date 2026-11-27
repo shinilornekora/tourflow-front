@@ -58,6 +58,11 @@ export function resetDb() {
   db = createDb();
 }
 
+/** Подменяет состояние целиком (демо-режим восстанавливает его из localStorage). */
+export function replaceDb(next: Db) {
+  db = next;
+}
+
 const API = '*/api';
 const token = (u: User) => `token-${u.id}`;
 const session = (u: DbUser): Session => {

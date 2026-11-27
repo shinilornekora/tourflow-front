@@ -14,7 +14,8 @@
     "test:watch": "vitest",
     "test:unit": "vitest run --project unit",
     "test:integration": "vitest run --project integration",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "build:pages": "VITE_MOCK=1 VITE_BASE=/tourflow-front/ vite build && cp dist/index.html dist/404.html && touch dist/.nojekyll"
   },
   "dependencies": {
     "effector": "^23.5.2",

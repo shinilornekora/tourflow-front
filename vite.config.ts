@@ -10,6 +10,8 @@ const alias = { '@': fileURLToPath(new URL('./src', import.meta.url)) };
 const gateway = process.env.VITE_GATEWAY_URL ?? 'http://localhost:8080';
 
 export default defineConfig({
+  // Для GitHub Pages сборка идёт с VITE_BASE=/tourflow-front/.
+  base: process.env.VITE_BASE ?? '/',
   plugins: [react()],
   resolve: { alias },
   server: {

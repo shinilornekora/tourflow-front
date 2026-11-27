@@ -1,5 +1,7 @@
 # TourFlow — фронтенд турфирмы
 
+**Демо:** https://shinilornekora.github.io/tourflow-front/ (бэкенд эмулируется в браузере, входы: `anna@example.com`, `max@example.com`, `root@example.com`, пароль `password1`)
+
 SPA для бронирования отелей с тремя ролями: **клиент**, **менеджер отеля** и **администратор**.
 Бэкенд — микросервисы [tourflow](https://github.com/shinilornekora/tourflow); фронт ходит только в его `gateway` по `/api`. Контракт API описан в [`docs/API.md`](https://github.com/shinilornekora/tourflow/blob/main/docs/API.md) бэкенда.
 
@@ -22,6 +24,7 @@ npm run dev        # http://localhost:3000, /api проксируется на g
 VITE_GATEWAY_URL=http://localhost:8080 npm run dev   # другой адрес gateway
 npm run dev:mock   # без бэкенда: фейковый gateway на MSW прямо в браузере
 npm run build      # продакшен-сборка в dist/
+npm run build:pages  # демо-сборка для GitHub Pages (MSW, base /tourflow-front/)
 ```
 
 С настоящим бэкендом: `admin@tourflow.local / Admin12345`, после `./scripts/seed.sh` ещё `manager@tourflow.local / Manager123` и `client@tourflow.local / Client123`.
@@ -61,3 +64,7 @@ src/
 ## Безопасность сессии
 
 Access-токен хранится только в памяти HTTP-клиента, refresh-токен — в HttpOnly-cookie бэкенда. При 401 клиент один раз вызывает `/auth/refresh` (общий промис на все параллельные запросы) и повторяет запрос; после перезагрузки страницы сессия восстанавливается тем же refresh.
+
+## Демо на GitHub Pages
+
+На каждый пуш в `main` workflow `.github/workflows/pages.yml` собирает демо (`VITE_MOCK=1`) и кладёт его в ветку `gh-pages`. В демо работает тот же фейковый gateway, что и в интеграционных тестах; данные лежат в `localStorage` браузера и сбрасываются кнопкой «Сбросить данные». Глубокие ссылки работают через `404.html` (копия `index.html`).
