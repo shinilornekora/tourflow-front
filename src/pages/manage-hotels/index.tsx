@@ -12,8 +12,16 @@ export const managedQuery = createRequest((_: void) =>
 );
 
 export default function ManageHotelsPage() {
-  const [data, pending, error, load, role] = useUnit([managedQuery.$data, managedQuery.$pending, managedQuery.$error, managedQuery.start, $role]);
-  useEffect(() => { load(); }, [load]);
+  const [data, pending, error, load, role] = useUnit([
+    managedQuery.$data,
+    managedQuery.$pending,
+    managedQuery.$error,
+    managedQuery.start,
+    $role,
+  ]);
+  useEffect(() => {
+    load();
+  }, [load]);
   const hotels = data?.items ?? [];
 
   return (

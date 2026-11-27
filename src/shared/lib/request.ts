@@ -1,6 +1,14 @@
 // Маленькая фабрика «запрос → данные/ошибка/загрузка» поверх эффекта Effector,
 // чтобы страницы не дублировали одинаковые сторы.
-import { createEffect, createEvent, createStore, sample, type Effect, type EventCallable, type Store } from 'effector';
+import {
+  createEffect,
+  createEvent,
+  createStore,
+  sample,
+  type Effect,
+  type EventCallable,
+  type Store,
+} from 'effector';
 import { errorMessage } from './format';
 
 export interface Request<P, D> {

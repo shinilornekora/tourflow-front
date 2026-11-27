@@ -28,7 +28,9 @@ export function Layout() {
             <span aria-hidden>🧳</span> Tour<b>Flow</b>
           </NavLink>
           <nav className="nav" aria-label="Основная навигация">
-            <NavLink to="/" end>Отели</NavLink>
+            <NavLink to="/" end>
+              Отели
+            </NavLink>
             {role === 'customer' && <NavLink to="/cabinet/bookings">Мои заказы</NavLink>}
             {(role === 'hotel_manager' || role === 'admin') && (
               <>
@@ -41,7 +43,11 @@ export function Layout() {
           <div className="spacer" />
           {user ? (
             <div className="row" style={{ gap: 8 }}>
-              <NavLink to="/cabinet/notifications" className="neu-btn small" aria-label={`Уведомления: ${unread}`}>
+              <NavLink
+                to="/cabinet/notifications"
+                className="neu-btn small"
+                aria-label={`Уведомления: ${unread}`}
+              >
                 🔔 {unread > 0 && <span className="counter">{unread}</span>}
               </NavLink>
               <NavLink to="/cabinet/profile" className="neu-btn small" title={roleLabel[user.role]}>
@@ -58,8 +64,12 @@ export function Layout() {
             </div>
           ) : (
             <div className="row" style={{ gap: 8 }}>
-              <NavLink to="/login" className="neu-btn small">Войти</NavLink>
-              <NavLink to="/register" className="neu-btn small primary">Регистрация</NavLink>
+              <NavLink to="/login" className="neu-btn small">
+                Войти
+              </NavLink>
+              <NavLink to="/register" className="neu-btn small primary">
+                Регистрация
+              </NavLink>
             </div>
           )}
         </div>

@@ -22,7 +22,6 @@ import type {
   User,
 } from './types';
 
-
 export interface HotelQuery {
   q?: string;
   city?: string;
@@ -66,7 +65,10 @@ export const MAX_PAGE_SIZE = 50;
  * Забирает все страницы списка (по 50) — бэкенд молча режет page_size до 50.
  * maxPages страхует от бесконечного цикла, если total растёт на лету.
  */
-export async function fetchAll<T>(load: (page: number, page_size: number) => Promise<Paged<T>>, maxPages = 20): Promise<Paged<T>> {
+export async function fetchAll<T>(
+  load: (page: number, page_size: number) => Promise<Paged<T>>,
+  maxPages = 20,
+): Promise<Paged<T>> {
   const items: T[] = [];
   let total = 0;
   for (let page = 1; page <= maxPages; page++) {
@@ -89,8 +91,7 @@ export const api = {
     request<Session>('/auth/login', { method: 'POST', body }).then(withSession),
   register: (body: { email: string; password: string; full_name: string; phone: string }) =>
     request<Session>('/auth/register', { method: 'POST', body }).then(withSession),
-  logout: () =>
-    request<void>('/auth/logout', { method: 'POST' }).finally(() => tokenStorage.set(null)),
+  logout: () => request<void>('/auth/logout', { method: 'POST' }).finally(() => tokenStorage.set(null)),
   me: () => request<User>('/users/me'),
   updateMe: (body: { full_name: string; phone: string; version: number }) =>
     request<User>('/users/me', { method: 'PATCH', body }),
@@ -137,8 +138,7 @@ export const api = {
   reservation: (id: string) => request<Reservation>(`/reservations/${id}`),
   cancelReservation: (id: string, reason = '') =>
     request<Reservation>(`/reservations/${id}/cancel`, { method: 'POST', body: { reason } }),
-  audit: (query: { hotel_id: string; page?: number }) =>
-    request<Paged<AuditRecord>>('/audit', { query }),
+  audit: (query: { hotel_id: string; page?: number }) => request<Paged<AuditRecord>>('/audit', { query }),
 
   // ---------- notification ----------
   notifications: (query: { page?: number; unread?: boolean }) =>

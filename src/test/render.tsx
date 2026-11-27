@@ -1,8 +1,8 @@
 import { render } from '@testing-library/react';
 import { fork, type Scope } from 'effector';
 import { Provider } from 'effector-react';
-import { MemoryRouter } from 'react-router-dom';
-import { App } from '@/app/App';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
+import { routes } from '@/app/routes';
 import { db } from './gateway';
 import { users } from './fixtures';
 import { SESSION_HINT } from '@/entities/session/model';
@@ -20,9 +20,7 @@ export function renderApp(path = '/', opts: { as?: keyof typeof users } = {}) {
   const scope: Scope = fork();
   const utils = render(
     <Provider value={scope}>
-      <MemoryRouter initialEntries={[path]}>
-        <App />
-      </MemoryRouter>
+      <RouterProvider router={createMemoryRouter(routes, { initialEntries: [path] })} />
     </Provider>,
   );
   return { scope, ...utils };

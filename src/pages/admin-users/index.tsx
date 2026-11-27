@@ -8,7 +8,9 @@ import { roleLabel } from '@/shared/lib/format';
 import { Alert, Button, Card, Select, Spinner, TextField } from '@/shared/ui';
 
 export const usersQuery = createRequest((p: { q: string; role: Role | '' }) => api.users({ ...p, page: 1 }));
-export const changeRole = createRequest(({ id, role }: { id: string; role: Role }) => api.changeRole(id, role));
+export const changeRole = createRequest(({ id, role }: { id: string; role: Role }) =>
+  api.changeRole(id, role),
+);
 export const searchSubmitted = createEvent<{ q: string; role: Role | '' }>();
 
 export const $users = createStore<User[]>([])
@@ -30,7 +32,9 @@ export default function UsersPage() {
   ]);
   const [q, setQ] = useState('');
   const [role, setRoleFilter] = useState<Role | ''>('');
-  useEffect(() => { search({ q: '', role: '' }); }, [search]);
+  useEffect(() => {
+    search({ q: '', role: '' });
+  }, [search]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -50,7 +54,9 @@ export default function UsersPage() {
             options={[{ value: '', label: 'Все' }, ...roles.map((r) => ({ value: r, label: roleLabel[r] }))]}
           />
           <div style={{ alignSelf: 'end' }}>
-            <Button type="submit" variant="primary">Найти</Button>
+            <Button type="submit" variant="primary">
+              Найти
+            </Button>
           </div>
         </form>
       </Card>
@@ -74,7 +80,9 @@ export default function UsersPage() {
                     <b>{u.full_name}</b>
                     <div className="muted">{u.email}</div>
                   </td>
-                  <td className="muted" style={{ fontSize: 12 }}>{u.id}</td>
+                  <td className="muted" style={{ fontSize: 12 }}>
+                    {u.id}
+                  </td>
                   <td>
                     <select
                       className="neu-input"
@@ -83,7 +91,9 @@ export default function UsersPage() {
                       onChange={(e) => setRole({ id: u.id, role: e.target.value as Role })}
                     >
                       {roles.map((r) => (
-                        <option key={r} value={r}>{roleLabel[r]}</option>
+                        <option key={r} value={r}>
+                          {roleLabel[r]}
+                        </option>
                       ))}
                     </select>
                   </td>

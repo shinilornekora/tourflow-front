@@ -32,7 +32,10 @@ describe('менеджер отеля', () => {
     renderApp('/manage/hotels/h-sea', { as: 'manager' });
     expect(await screen.findByRole('button', { name: 'В архив' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Отключить' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Журнал' })).toHaveAttribute('href', '/manage/hotels/h-sea/audit');
+    expect(screen.getByRole('link', { name: 'Журнал' })).toHaveAttribute(
+      'href',
+      '/manage/hotels/h-sea/audit',
+    );
   });
 
   it('видит сводку, фильтрует брони и отменяет бронь гостя с обязательной причиной', async () => {
@@ -56,7 +59,10 @@ describe('менеджер отеля', () => {
     await user.click(submit);
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    expect(db.reservations.find((r) => r.id === 'r-1')).toMatchObject({ status: 'cancelled', cancel_reason: 'Ремонт в номере' });
+    expect(db.reservations.find((r) => r.id === 'r-1')).toMatchObject({
+      status: 'cancelled',
+      cancel_reason: 'Ремонт в номере',
+    });
     // в фильтре «Подтверждённые» отменённая бронь пропала, хотя модель чтения её ещё не увидела
     await waitFor(() => expect(screen.getAllByRole('article')).toHaveLength(1));
   });

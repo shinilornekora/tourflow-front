@@ -22,8 +22,22 @@ export default function LoginPage() {
         <form className="stack" onSubmit={submit} aria-label="Вход">
           <h1>Вход</h1>
           {error && <Alert>{error}</Alert>}
-          <TextField label="Email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-          <TextField label="Пароль" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+          <TextField
+            label="Email"
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <TextField
+            label="Пароль"
+            type="password"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
           <Button type="submit" variant="primary" disabled={pending}>
             {pending ? 'Входим…' : 'Войти'}
           </Button>

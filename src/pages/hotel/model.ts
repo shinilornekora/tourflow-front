@@ -27,8 +27,10 @@ export const bookRequest = createRequest(api.book);
 
 export const $hotelId = createStore<string | null>(null).on(HotelGate.open, (_, { id }) => id);
 
-export const $stay = createStore<Stay>({ check_in: isoDay(7), check_out: isoDay(9), guests: 2 })
-  .on(stayChanged, (s, p) => ({ ...s, ...p }));
+export const $stay = createStore<Stay>({ check_in: isoDay(7), check_out: isoDay(9), guests: 2 }).on(
+  stayChanged,
+  (s, p) => ({ ...s, ...p }),
+);
 
 /** Ошибка формы дат проверяется на клиенте до запроса. */
 export const $stayError = $stay.map(({ check_in, check_out, guests }) => {

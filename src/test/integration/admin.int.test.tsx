@@ -63,4 +63,12 @@ describe('администратор', () => {
     await waitFor(() => expect(db.users.find((u) => u.id === 'u-cust')?.role).toBe('hotel_manager'));
     expect(role).toHaveValue('hotel_manager');
   });
+
+  it('админ не может бронировать номера', async () => {
+    const user = userEvent.setup();
+    renderApp('/hotels/h-sea', { as: 'admin' });
+    await user.click(await screen.findByRole('button', { name: 'Показать номера' }));
+    expect(await screen.findByText('Бронируют только клиенты')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Забронировать' })).not.toBeInTheDocument();
+  });
 });

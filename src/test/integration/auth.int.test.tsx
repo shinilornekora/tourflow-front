@@ -46,4 +46,9 @@ describe('вход и регистрация', () => {
     await user.click(await screen.findByRole('button', { name: 'Выйти' }));
     expect(await screen.findByRole('link', { name: 'Войти' })).toBeInTheDocument();
   });
+
+  it('неизвестный адрес показывает страницу 404', async () => {
+    renderApp('/no/such/page');
+    expect(await screen.findByRole('heading', { name: '404' })).toBeInTheDocument();
+  });
 });

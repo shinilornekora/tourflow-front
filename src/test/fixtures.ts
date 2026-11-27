@@ -3,9 +3,36 @@ import type { Hotel, Notification, Reservation, RoomType, User } from '@/shared/
 const now = '2026-11-01T10:00:00Z';
 
 export const users: Record<string, User & { password: string }> = {
-  customer: { id: 'u-cust', email: 'anna@example.com', full_name: 'Анна Клиентова', phone: '+79990000001', role: 'customer', created_at: now, version: 1, password: 'password1' },
-  manager: { id: 'u-man', email: 'max@example.com', full_name: 'Максим Менеджеров', phone: '+79990000002', role: 'hotel_manager', created_at: now, version: 1, password: 'password1' },
-  admin: { id: 'u-adm', email: 'root@example.com', full_name: 'Ольга Админова', phone: '+79990000003', role: 'admin', created_at: now, version: 1, password: 'password1' },
+  customer: {
+    id: 'u-cust',
+    email: 'anna@example.com',
+    full_name: 'Анна Клиентова',
+    phone: '+79990000001',
+    role: 'customer',
+    created_at: now,
+    version: 1,
+    password: 'password1',
+  },
+  manager: {
+    id: 'u-man',
+    email: 'max@example.com',
+    full_name: 'Максим Менеджеров',
+    phone: '+79990000002',
+    role: 'hotel_manager',
+    created_at: now,
+    version: 1,
+    password: 'password1',
+  },
+  admin: {
+    id: 'u-adm',
+    email: 'root@example.com',
+    full_name: 'Ольга Админова',
+    phone: '+79990000003',
+    role: 'admin',
+    created_at: now,
+    version: 1,
+    password: 'password1',
+  },
 };
 
 export const hotel = (over: Partial<Hotel> = {}): Hotel => ({

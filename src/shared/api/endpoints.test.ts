@@ -4,7 +4,12 @@ import { fetchAll, MAX_PAGE_SIZE } from './endpoints';
 describe('fetchAll', () => {
   it('собирает все страницы по 50 записей (лимит gateway)', async () => {
     const all = Array.from({ length: 120 }, (_, i) => i);
-    const load = vi.fn(async (page: number, size: number) => ({ items: all.slice((page - 1) * size, page * size), page, page_size: size, total: all.length }));
+    const load = vi.fn(async (page: number, size: number) => ({
+      items: all.slice((page - 1) * size, page * size),
+      page,
+      page_size: size,
+      total: all.length,
+    }));
     const res = await fetchAll(load);
     expect(res.items).toEqual(all);
     expect(load).toHaveBeenCalledTimes(3);

@@ -13,7 +13,10 @@ describe('модель страницы отеля', () => {
     expect(scope.getState(m.$stayError)).toBe('Выезд должен быть позже заезда');
     await allSettled(m.stayChanged, { scope, params: { check_in: '2000-01-01', check_out: '2000-01-05' } });
     expect(scope.getState(m.$stayError)).toBe('Дата заезда уже прошла');
-    await allSettled(m.stayChanged, { scope, params: { check_in: '2099-01-10', check_out: '2099-01-12', guests: 0 } });
+    await allSettled(m.stayChanged, {
+      scope,
+      params: { check_in: '2099-01-10', check_out: '2099-01-12', guests: 0 },
+    });
     expect(scope.getState(m.$stayError)).toBe('Укажите количество гостей');
   });
 
@@ -21,7 +24,10 @@ describe('модель страницы отеля', () => {
     const scope = fork();
     await allSettled(m.HotelGate.open, { scope, params: { id: 'h-sea' } });
     expect(scope.getState(m.hotelQuery.$data)?.hotel.name).toBe('Морской бриз');
-    await allSettled(m.stayChanged, { scope, params: { check_in: '2099-03-01', check_out: '2099-03-03', guests: 2 } });
+    await allSettled(m.stayChanged, {
+      scope,
+      params: { check_in: '2099-03-01', check_out: '2099-03-03', guests: 2 },
+    });
     await allSettled(m.searchSubmitted, { scope });
     const offers = scope.getState(m.availabilityQuery.$data)!.items;
     expect(offers).toHaveLength(1);
@@ -46,7 +52,10 @@ describe('модель страницы отеля', () => {
         keys.push(request.headers.get('Idempotency-Key'));
         if (fail) {
           fail = false;
-          return HttpResponse.json({ error: { code: 'unavailable', message: 'Сервис недоступен' } }, { status: 503 });
+          return HttpResponse.json(
+            { error: { code: 'unavailable', message: 'Сервис недоступен' } },
+            { status: 503 },
+          );
         }
         return HttpResponse.json(reservation({ id: 'r-new' }));
       }),
@@ -56,7 +65,15 @@ describe('модель страницы отеля', () => {
     await allSettled(m.HotelGate.open, { scope, params: { id: 'h-sea' } });
     await allSettled(m.offerSelected, {
       scope,
-      params: { room_type_id: 'rt-std', name: 'Стандарт', capacity: 2, total_rooms: 5, free: 5, price_per_night: { amount: 1, currency: 'RUB' }, total_price: { amount: 2, currency: 'RUB' } },
+      params: {
+        room_type_id: 'rt-std',
+        name: 'Стандарт',
+        capacity: 2,
+        total_rooms: 5,
+        free: 5,
+        price_per_night: { amount: 1, currency: 'RUB' },
+        total_price: { amount: 2, currency: 'RUB' },
+      },
     });
     await allSettled(m.bookingConfirmed, { scope });
     expect(scope.getState(m.bookRequest.$error)).toBe('Сервис недоступен');

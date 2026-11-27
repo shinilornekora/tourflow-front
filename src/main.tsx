@@ -1,26 +1,29 @@
 import { StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { App } from '@/app/App';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { routes } from '@/app/routes';
 import '@/app/styles.css';
 
-const isDemo = import.meta.env.VITE_MOCK === '1';
+// На github.io приложение живёт в подпапке /tourflow-front/.
+const router = createBrowserRouter(routes, { basename: import.meta.env.BASE_URL.replace(/\/$/, '') || '/' });
 
 async function boot() {
   let banner: ReactNode = null;
   // Демо (GitHub Pages, npm run dev:mock): фронт работает без бэкенда, на MSW.
-  if (isDemo) {
-    const [{ startDemo }, { DemoBanner }] = await Promise.all([import('@/demo/demo'), import('@/demo/DemoBanner')]);
+  // Условие записано прямо через import.meta.env, чтобы оба сборщика вырезали
+  // демо-код (MSW, фейковый gateway) из обычной сборки.
+  if (import.meta.env.VITE_MOCK === '1') {
+    const [{ startDemo }, { DemoBanner }] = await Promise.all([
+      import('@/demo/demo'),
+      import('@/demo/DemoBanner'),
+    ]);
     await startDemo();
     banner = <DemoBanner />;
   }
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      {/* На github.io приложение живёт в подпапке /tourflow-front/. */}
-      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-        {banner}
-        <App />
-      </BrowserRouter>
+      {banner}
+      <RouterProvider router={router} />
     </StrictMode>,
   );
 }

@@ -13,17 +13,29 @@ describe('слияние ответов команд с моделью чтен�
 
   it('отменённая командой бронь не «воскресает» из устаревшего списка', () => {
     const stale = [reservation({ id: 'a', version: 1 })];
-    const merged = mergeCommitted(stale, { a: reservation({ id: 'a', version: 2, status: 'cancelled' }) }, () => true);
+    const merged = mergeCommitted(
+      stale,
+      { a: reservation({ id: 'a', version: 2, status: 'cancelled' }) },
+      () => true,
+    );
     expect(merged.map((r) => r.status)).toEqual(['cancelled']);
   });
 
   it('новая бронь, которой ещё нет в модели чтения, добавляется в начало', () => {
-    const merged = mergeCommitted([reservation({ id: 'old' })], { fresh: reservation({ id: 'fresh' }) }, () => true);
+    const merged = mergeCommitted(
+      [reservation({ id: 'old' })],
+      { fresh: reservation({ id: 'fresh' }) },
+      () => true,
+    );
     expect(merged.map((r) => r.id)).toEqual(['fresh', 'old']);
   });
 
   it('чужие для списка брони не добавляются', () => {
-    const merged = mergeCommitted([], { x: reservation({ id: 'x', hotel_id: 'other' }) }, (r) => r.hotel_id === 'h-sea');
+    const merged = mergeCommitted(
+      [],
+      { x: reservation({ id: 'x', hotel_id: 'other' }) },
+      (r) => r.hotel_id === 'h-sea',
+    );
     expect(merged).toEqual([]);
   });
 });

@@ -7,9 +7,16 @@ import * as m from './model';
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ full_name: '', email: '', phone: '', password: '' });
-  const [error, fields, pending, register, reset] = useUnit([m.$authError, m.$fieldErrors, m.$registerPending, registerFx, m.formReset]);
+  const [error, fields, pending, register, reset] = useUnit([
+    m.$authError,
+    m.$fieldErrors,
+    m.$registerPending,
+    registerFx,
+    m.formReset,
+  ]);
   useEffect(() => () => reset(), [reset]);
-  const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const set = (k: keyof typeof form) => (e: { target: { value: string } }) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -22,10 +29,37 @@ export default function RegisterPage() {
         <form className="stack" onSubmit={submit} aria-label="Регистрация">
           <h1>Регистрация</h1>
           {error && <Alert>{error}</Alert>}
-          <TextField label="Имя и фамилия" required value={form.full_name} onChange={set('full_name')} error={fields.full_name} />
-          <TextField label="Email" type="email" required value={form.email} onChange={set('email')} error={fields.email} />
-          <TextField label="Телефон" type="tel" value={form.phone} onChange={set('phone')} error={fields.phone} />
-          <TextField label="Пароль" type="password" required minLength={8} value={form.password} onChange={set('password')} error={fields.password} />
+          <TextField
+            label="Имя и фамилия"
+            required
+            value={form.full_name}
+            onChange={set('full_name')}
+            error={fields.full_name}
+          />
+          <TextField
+            label="Email"
+            type="email"
+            required
+            value={form.email}
+            onChange={set('email')}
+            error={fields.email}
+          />
+          <TextField
+            label="Телефон"
+            type="tel"
+            value={form.phone}
+            onChange={set('phone')}
+            error={fields.phone}
+          />
+          <TextField
+            label="Пароль"
+            type="password"
+            required
+            minLength={8}
+            value={form.password}
+            onChange={set('password')}
+            error={fields.password}
+          />
           <Button type="submit" variant="primary" disabled={pending}>
             Создать аккаунт
           </Button>

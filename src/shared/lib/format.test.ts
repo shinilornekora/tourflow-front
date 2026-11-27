@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@/shared/api/client';
-import { errorFields, errorMessage, formatDate, formatMoney, isPast, isoDay, nightsBetween, plural } from './format';
+import {
+  errorFields,
+  errorMessage,
+  formatDate,
+  formatMoney,
+  isPast,
+  isoDay,
+  nightsBetween,
+  plural,
+} from './format';
 
 describe('format', () => {
   it('форматирует копейки в рубли без дробной части', () => {

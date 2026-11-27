@@ -20,8 +20,12 @@ export default function ManageBookingsPage() {
   ]);
   const [hotelId, setHotelId] = useState('');
   const [status, setStatus] = useState<ReservationStatus | ''>('');
-  useEffect(() => { loadHotels(); }, [loadHotels]);
-  useEffect(() => { apply({ hotel_id: hotelId, status }); }, [apply, hotelId, status]);
+  useEffect(() => {
+    loadHotels();
+  }, [loadHotels]);
+  useEffect(() => {
+    apply({ hotel_id: hotelId, status });
+  }, [apply, hotelId, status]);
 
   return (
     <div className="page stack">
@@ -32,7 +36,10 @@ export default function ManageBookingsPage() {
             label="Отель"
             value={hotelId}
             onChange={(e) => setHotelId(e.target.value)}
-            options={[{ value: '', label: 'Все мои отели' }, ...(hotels?.items ?? []).map((h) => ({ value: h.id, label: h.name }))]}
+            options={[
+              { value: '', label: 'Все мои отели' },
+              ...(hotels?.items ?? []).map((h) => ({ value: h.id, label: h.name })),
+            ]}
           />
           <Select
             label="Статус"
@@ -67,7 +74,9 @@ export default function ManageBookingsPage() {
               r={r}
               actions={
                 m.canStaffCancel(r) ? (
-                  <Button small variant="danger" onClick={() => askCancel(r)}>Отменить</Button>
+                  <Button small variant="danger" onClick={() => askCancel(r)}>
+                    Отменить
+                  </Button>
                 ) : undefined
               }
             />
@@ -80,7 +89,13 @@ export default function ManageBookingsPage() {
 }
 
 function CancelModal() {
-  const [target, pending, error, dismiss, confirm] = useUnit([m.$toCancel, m.cancelRequest.$pending, m.cancelRequest.$error, m.cancelDismissed, m.cancelConfirmed]);
+  const [target, pending, error, dismiss, confirm] = useUnit([
+    m.$toCancel,
+    m.cancelRequest.$pending,
+    m.cancelRequest.$error,
+    m.cancelDismissed,
+    m.cancelConfirmed,
+  ]);
   const [reason, setReason] = useState('');
   useEffect(() => setReason(''), [target]);
   if (!target) return null;
@@ -96,7 +111,12 @@ function CancelModal() {
         <p>
           {target.hotel_name}, {target.room_type_name}
         </p>
-        <TextField label="Причина (обязательно, её увидит гость)" required value={reason} onChange={(e) => setReason(e.target.value)} />
+        <TextField
+          label="Причина (обязательно, её увидит гость)"
+          required
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+        />
         {error && <Alert>{error}</Alert>}
         <div className="row">
           <Button onClick={dismiss}>Не отменять</Button>

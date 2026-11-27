@@ -5,15 +5,24 @@ import { Alert, Button, Empty, Spinner } from '@/shared/ui';
 import { formatDateTime } from '@/shared/lib/format';
 
 export default function NotificationsPage() {
-  const [items, pending, error, unread] = useUnit([n.$items, n.listQuery.$pending, n.listQuery.$error, n.$unread]);
+  const [items, pending, error, unread] = useUnit([
+    n.$items,
+    n.listQuery.$pending,
+    n.listQuery.$error,
+    n.$unread,
+  ]);
   const [load, read, readAll] = useUnit([n.notificationsRequested, n.markRead.start, n.markAllRead.start]);
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   return (
     <div className="page stack" style={{ maxWidth: 760 }}>
       <div className="row-between">
         <h1 style={{ margin: 0 }}>Уведомления</h1>
-        <Button small disabled={unread === 0} onClick={() => readAll()}>Прочитать все</Button>
+        <Button small disabled={unread === 0} onClick={() => readAll()}>
+          Прочитать все
+        </Button>
       </div>
       {error && <Alert>{error}</Alert>}
       {pending && items.length === 0 ? (
@@ -29,7 +38,9 @@ export default function NotificationsPage() {
             </div>
             <p>{x.body}</p>
             {!x.read_at && (
-              <Button small onClick={() => read(x.id)}>Отметить прочитанным</Button>
+              <Button small onClick={() => read(x.id)}>
+                Отметить прочитанным
+              </Button>
             )}
           </article>
         ))

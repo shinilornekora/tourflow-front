@@ -39,11 +39,18 @@ describe('клиент: от поиска до брони и истории за
     expect(db.reservations).toHaveLength(4);
 
     // свободных номеров стало меньше
-    await waitFor(() => expect(within(screen.getByRole('region', { name: 'Свободные номера' })).getByText(/свободно 4 из 5/)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole('region', { name: 'Свободные номера' })).getByText(/свободно 4 из 5/),
+      ).toBeInTheDocument(),
+    );
 
     await user.click(screen.getByRole('link', { name: 'К моим броням' }));
     expect(await screen.findByRole('heading', { name: 'Мои заказы' })).toBeInTheDocument();
-    expect(await screen.findByRole('tab', { name: 'Предстоящие (2)' })).toHaveAttribute('aria-selected', 'true');
+    expect(await screen.findByRole('tab', { name: 'Предстоящие (2)' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
     expect(screen.getAllByRole('article', { name: 'Бронь Морской бриз' })).toHaveLength(2);
   });
 
@@ -61,7 +68,12 @@ describe('клиент: от поиска до брони и истории за
   });
 
   it('показывает сводку кабинета и запрещает отмену в день заезда', async () => {
-    db.reservations.push({ ...db.reservations[0]!, id: 'r-now', check_in: '2000-01-01', check_out: '2099-12-31' });
+    db.reservations.push({
+      ...db.reservations[0]!,
+      id: 'r-now',
+      check_in: '2000-01-01',
+      check_out: '2099-12-31',
+    });
     db.projected = structuredClone(db.reservations);
     renderApp('/cabinet/bookings', { as: 'customer' });
     expect(await screen.findByRole('figure', { name: 'Предстоит поездок' })).toHaveTextContent('1');

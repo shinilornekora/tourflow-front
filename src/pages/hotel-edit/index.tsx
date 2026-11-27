@@ -19,16 +19,31 @@ export default function HotelEditPage() {
 function HotelEdit({ id }: { id: string }) {
   const isNew = id === 'new';
   useGate(m.HotelEditGate, { id });
-  const [details, loading, loadError, role, actionError] = useUnit([m.$details, m.detailsQuery.$pending, m.detailsQuery.$error, $role, m.$actionError]);
+  const [details, loading, loadError, role, actionError] = useUnit([
+    m.$details,
+    m.detailsQuery.$pending,
+    m.detailsQuery.$error,
+    $role,
+    m.$actionError,
+  ]);
 
-  if (!isNew && loadError) return <div className="page"><Alert>{loadError}</Alert></div>;
+  if (!isNew && loadError)
+    return (
+      <div className="page">
+        <Alert>{loadError}</Alert>
+      </div>
+    );
   if (!isNew && (loading || !details || details.hotel.id !== id)) return <Spinner />;
 
   return (
     <div className="page stack">
       <Link to="/manage/hotels">← К отелям</Link>
       {actionError && <Alert>{actionError}</Alert>}
-      <HotelForm hotel={isNew ? null : details!.hotel} canEdit={role === 'admin' || !isNew} isAdmin={role === 'admin'} />
+      <HotelForm
+        hotel={isNew ? null : details!.hotel}
+        canEdit={role === 'admin' || !isNew}
+        isAdmin={role === 'admin'}
+      />
       {!isNew && details && (
         <>
           <RoomTypes hotelId={details.hotel.id} rooms={details.room_types} />
@@ -41,12 +56,28 @@ function HotelEdit({ id }: { id: string }) {
 
 function HotelForm({ hotel, canEdit, isAdmin }: { hotel: Hotel | null; canEdit: boolean; isAdmin: boolean }) {
   const navigate = useNavigate();
-  const [save, pending, error, toggle] = useUnit([m.saveHotel.fx, m.saveHotel.$pending, m.saveHotel.$error, m.setStatus.start]);
+  const [save, pending, error, toggle] = useUnit([
+    m.saveHotel.fx,
+    m.saveHotel.$pending,
+    m.saveHotel.$error,
+    m.setStatus.start,
+  ]);
   const [form, setForm] = useState<HotelInput>(emptyHotel);
   const [fields, setFields] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
   useEffect(() => {
-    setForm(hotel ? { name: hotel.name, city: hotel.city, address: hotel.address, description: hotel.description, stars: hotel.stars, photo_url: hotel.photo_url } : emptyHotel);
+    setForm(
+      hotel
+        ? {
+            name: hotel.name,
+            city: hotel.city,
+            address: hotel.address,
+            description: hotel.description,
+            stars: hotel.stars,
+            photo_url: hotel.photo_url,
+          }
+        : emptyHotel,
+    );
   }, [hotel]);
   const set = (k: keyof HotelInput) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [k]: k === 'stars' ? Number(e.target.value) : e.target.value }));
@@ -70,16 +101,30 @@ function HotelForm({ hotel, canEdit, isAdmin }: { hotel: Hotel | null; canEdit: 
           <h1 style={{ margin: 0 }}>{hotel ? hotel.name : 'Новый отель'}</h1>
           {hotel && (
             <div className="row">
-              <Badge tone={hotel.status === 'active' ? 'ok' : 'bad'}>{hotel.status === 'active' ? 'Активен' : 'Отключён'}</Badge>
-              <Link className="neu-btn small" to={`/manage/hotels/${hotel.id}/audit`}>Журнал</Link>
+              <Badge tone={hotel.status === 'active' ? 'ok' : 'bad'}>
+                {hotel.status === 'active' ? 'Активен' : 'Отключён'}
+              </Badge>
+              <Link className="neu-btn small" to={`/manage/hotels/${hotel.id}/audit`}>
+                Журнал
+              </Link>
               {/* Включать и отключать отель может только админ; отключение отменяет будущие брони. */}
               {isAdmin && (
                 <Button
                   small
                   variant={hotel.status === 'active' ? 'danger' : 'primary'}
                   onClick={() => {
-                    if (hotel.status === 'active' && !window.confirm('Отключить отель? Все будущие брони будут отменены, гости получат уведомления.')) return;
-                    toggle({ id: hotel.id, status: hotel.status === 'active' ? 'inactive' : 'active', version: hotel.version });
+                    if (
+                      hotel.status === 'active' &&
+                      !window.confirm(
+                        'Отключить отель? Все будущие брони будут отменены, гости получат уведомления.',
+                      )
+                    )
+                      return;
+                    toggle({
+                      id: hotel.id,
+                      status: hotel.status === 'active' ? 'inactive' : 'active',
+                      version: hotel.version,
+                    });
                   }}
                 >
                   {hotel.status === 'active' ? 'Отключить' : 'Включить'}
@@ -91,13 +136,51 @@ function HotelForm({ hotel, canEdit, isAdmin }: { hotel: Hotel | null; canEdit: 
         {error && <Alert>{error}</Alert>}
         {saved && <Alert tone="success">Сохранено</Alert>}
         <div className="form-grid">
-          <TextField label="Название" required value={form.name} onChange={set('name')} error={fields.name} disabled={!canEdit} />
-          <TextField label="Город" required value={form.city} onChange={set('city')} error={fields.city} disabled={!canEdit} />
-          <TextField label="Адрес" required value={form.address} onChange={set('address')} error={fields.address} disabled={!canEdit} />
-          <Select label="Звёзды" value={String(form.stars)} onChange={set('stars')} options={[1, 2, 3, 4, 5].map((n) => ({ value: String(n), label: '★'.repeat(n) }))} disabled={!canEdit} />
+          <TextField
+            label="Название"
+            required
+            value={form.name}
+            onChange={set('name')}
+            error={fields.name}
+            disabled={!canEdit}
+          />
+          <TextField
+            label="Город"
+            required
+            value={form.city}
+            onChange={set('city')}
+            error={fields.city}
+            disabled={!canEdit}
+          />
+          <TextField
+            label="Адрес"
+            required
+            value={form.address}
+            onChange={set('address')}
+            error={fields.address}
+            disabled={!canEdit}
+          />
+          <Select
+            label="Звёзды"
+            value={String(form.stars)}
+            onChange={set('stars')}
+            options={[1, 2, 3, 4, 5].map((n) => ({ value: String(n), label: '★'.repeat(n) }))}
+            disabled={!canEdit}
+          />
         </div>
-        <TextField label="Ссылка на фото" value={form.photo_url} onChange={set('photo_url')} error={fields.photo_url} disabled={!canEdit} />
-        <TextArea label="Описание" value={form.description} onChange={set('description')} disabled={!canEdit} />
+        <TextField
+          label="Ссылка на фото"
+          value={form.photo_url}
+          onChange={set('photo_url')}
+          error={fields.photo_url}
+          disabled={!canEdit}
+        />
+        <TextArea
+          label="Описание"
+          value={form.description}
+          onChange={set('description')}
+          disabled={!canEdit}
+        />
         {canEdit && (
           <div>
             <Button type="submit" variant="primary" disabled={pending}>
@@ -116,7 +199,9 @@ function RoomTypes({ hotelId, rooms }: { hotelId: string; rooms: RoomType[] }) {
     <Card>
       <div className="row-between">
         <h2 style={{ margin: 0 }}>Типы номеров</h2>
-        <Button small variant="primary" onClick={() => open(null)}>+ Тип номера</Button>
+        <Button small variant="primary" onClick={() => open(null)}>
+          + Тип номера
+        </Button>
       </div>
       <div className="stack" style={{ marginTop: 16 }}>
         {rooms.length === 0 && <Empty>Добавьте первый тип номера, чтобы отель появился в поиске</Empty>}
@@ -129,8 +214,19 @@ function RoomTypes({ hotelId, rooms }: { hotelId: string; rooms: RoomType[] }) {
               </div>
             </div>
             <div className="row">
-              <Button small onClick={() => open(r.id)}>Изменить</Button>
-              <Button small onClick={() => toggle({ id: r.id, status: r.status === 'active' ? 'archived' : 'active', version: r.version })}>
+              <Button small onClick={() => open(r.id)}>
+                Изменить
+              </Button>
+              <Button
+                small
+                onClick={() =>
+                  toggle({
+                    id: r.id,
+                    status: r.status === 'active' ? 'archived' : 'active',
+                    version: r.version,
+                  })
+                }
+              >
                 {r.status === 'active' ? 'В архив' : 'Вернуть'}
               </Button>
             </div>
@@ -143,7 +239,12 @@ function RoomTypes({ hotelId, rooms }: { hotelId: string; rooms: RoomType[] }) {
 }
 
 function RoomEditor({ hotelId, room }: { hotelId: string; room: RoomType | null }) {
-  const [save, pending, error, close] = useUnit([m.saveRoom.fx, m.saveRoom.$pending, m.saveRoom.$error, m.roomEditorClosed]);
+  const [save, pending, error, close] = useUnit([
+    m.saveRoom.fx,
+    m.saveRoom.$pending,
+    m.saveRoom.$error,
+    m.roomEditorClosed,
+  ]);
   const [form, setForm] = useState({
     name: room?.name ?? '',
     description: room?.description ?? '',
@@ -161,7 +262,10 @@ function RoomEditor({ hotelId, room }: { hotelId: string; room: RoomType | null 
       capacity: form.capacity,
       total_rooms: form.total_rooms,
       price: { amount: Math.round(form.price * 100), currency: 'RUB' },
-      amenities: form.amenities.split(',').map((s) => s.trim()).filter(Boolean),
+      amenities: form.amenities
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
       photo_url: form.photo_url,
       version: room?.version,
     };
@@ -171,17 +275,50 @@ function RoomEditor({ hotelId, room }: { hotelId: string; room: RoomType | null 
     <Modal title={room ? 'Изменить тип номера' : 'Новый тип номера'} onClose={close}>
       <form className="stack" onSubmit={submit} aria-label="Тип номера">
         {error && <Alert>{error}</Alert>}
-        <TextField label="Название" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        <TextField
+          label="Название"
+          required
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+        />
         <div className="form-grid">
-          <TextField label="Вместимость" type="number" min={1} value={form.capacity} onChange={(e) => setForm({ ...form, capacity: Number(e.target.value) })} />
-          <TextField label="Количество номеров" type="number" min={1} value={form.total_rooms} onChange={(e) => setForm({ ...form, total_rooms: Number(e.target.value) })} />
-          <TextField label="Цена за ночь, ₽" type="number" min={1} value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
+          <TextField
+            label="Вместимость"
+            type="number"
+            min={1}
+            value={form.capacity}
+            onChange={(e) => setForm({ ...form, capacity: Number(e.target.value) })}
+          />
+          <TextField
+            label="Количество номеров"
+            type="number"
+            min={1}
+            value={form.total_rooms}
+            onChange={(e) => setForm({ ...form, total_rooms: Number(e.target.value) })}
+          />
+          <TextField
+            label="Цена за ночь, ₽"
+            type="number"
+            min={1}
+            value={form.price}
+            onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+          />
         </div>
-        <TextField label="Удобства через запятую" value={form.amenities} onChange={(e) => setForm({ ...form, amenities: e.target.value })} />
-        <TextArea label="Описание" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        <TextField
+          label="Удобства через запятую"
+          value={form.amenities}
+          onChange={(e) => setForm({ ...form, amenities: e.target.value })}
+        />
+        <TextArea
+          label="Описание"
+          value={form.description}
+          onChange={(e) => setForm({ ...form, description: e.target.value })}
+        />
         <div className="row">
           <Button onClick={close}>Отмена</Button>
-          <Button type="submit" variant="primary" disabled={pending}>Сохранить</Button>
+          <Button type="submit" variant="primary" disabled={pending}>
+            Сохранить
+          </Button>
         </div>
       </form>
     </Modal>
@@ -189,9 +326,16 @@ function RoomEditor({ hotelId, room }: { hotelId: string; room: RoomType | null 
 }
 
 function Managers({ hotel }: { hotel: Hotel }) {
-  const [users, loadUsers, assign, remove] = useUnit([m.managersQuery.$data, m.managersQuery.start, m.assignManager.start, m.removeManager.start]);
+  const [users, loadUsers, assign, remove] = useUnit([
+    m.managersQuery.$data,
+    m.managersQuery.start,
+    m.assignManager.start,
+    m.removeManager.start,
+  ]);
   const [pick, setPick] = useState('');
-  useEffect(() => { loadUsers(); }, [loadUsers]);
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
   const ids = hotel.manager_ids ?? [];
   const all = users?.items ?? [];
   const name = (id: string) => all.find((u) => u.id === id)?.full_name ?? id;
@@ -205,7 +349,9 @@ function Managers({ hotel }: { hotel: Hotel }) {
         {ids.map((id) => (
           <div key={id} className="neu-inset row-between">
             <span>{name(id)}</span>
-            <Button small variant="danger" onClick={() => remove({ hotelId: hotel.id, userId: id })}>Снять</Button>
+            <Button small variant="danger" onClick={() => remove({ hotelId: hotel.id, userId: id })}>
+              Снять
+            </Button>
           </div>
         ))}
         <div className="row" style={{ alignItems: 'end' }}>
@@ -214,7 +360,10 @@ function Managers({ hotel }: { hotel: Hotel }) {
               label="Назначить менеджера"
               value={pick}
               onChange={(e) => setPick(e.target.value)}
-              options={[{ value: '', label: 'Выберите пользователя' }, ...candidates.map((u) => ({ value: u.id, label: `${u.full_name} (${u.email})` }))]}
+              options={[
+                { value: '', label: 'Выберите пользователя' },
+                ...candidates.map((u) => ({ value: u.id, label: `${u.full_name} (${u.email})` })),
+              ]}
             />
           </div>
           <Button

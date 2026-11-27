@@ -13,8 +13,12 @@ export const cancelConfirmed = createEvent<string>();
 export const listQuery = createRequest((q: ReservationQuery) =>
   fetchAll((page, page_size) => api.hotelReservations({ ...q, page, page_size })),
 );
-export const summaryQuery = createRequest((q: ReservationQuery) => api.hotelSummary({ hotel_id: q.hotel_id }));
-export const cancelRequest = createRequest(({ id, reason }: { id: string; reason: string }) => api.cancelReservation(id, reason));
+export const summaryQuery = createRequest((q: ReservationQuery) =>
+  api.hotelSummary({ hotel_id: q.hotel_id }),
+);
+export const cancelRequest = createRequest(({ id, reason }: { id: string; reason: string }) =>
+  api.cancelReservation(id, reason),
+);
 
 const $filters = createStore<ReservationQuery>({}).on(filtersApplied, (_, f) => f);
 const $fromServer = createStore<Reservation[]>([]).on(listQuery.fx.doneData, (_, d) => d.items);

@@ -14,13 +14,21 @@ const actionLabel: Record<string, string> = {
   reservation_cancelled: 'Бронь отменена',
 };
 
-const actor = (r: AuditRecord) => (r.actor_role === 'system' ? 'Система' : roleLabel[r.actor_role] ?? r.actor_role);
+const actor = (r: AuditRecord) =>
+  r.actor_role === 'system' ? 'Система' : (roleLabel[r.actor_role] ?? r.actor_role);
 
 export default function AuditPage() {
   const { id = '' } = useParams();
-  const [data, pending, error, load] = useUnit([auditQuery.$data, auditQuery.$pending, auditQuery.$error, auditQuery.start]);
+  const [data, pending, error, load] = useUnit([
+    auditQuery.$data,
+    auditQuery.$pending,
+    auditQuery.$error,
+    auditQuery.start,
+  ]);
   const [page, setPage] = useState(1);
-  useEffect(() => { load({ hotel_id: id, page }); }, [load, id, page]);
+  useEffect(() => {
+    load({ hotel_id: id, page });
+  }, [load, id, page]);
   const pages = data ? Math.max(1, Math.ceil(data.total / data.page_size)) : 1;
 
   return (
@@ -36,7 +44,12 @@ export default function AuditPage() {
         <div className="table-wrap">
           <table className="table">
             <thead>
-              <tr><th>Когда</th><th>Кто</th><th>Действие</th><th>Объект</th></tr>
+              <tr>
+                <th>Когда</th>
+                <th>Кто</th>
+                <th>Действие</th>
+                <th>Объект</th>
+              </tr>
             </thead>
             <tbody>
               {data.items.map((r) => (
@@ -44,7 +57,9 @@ export default function AuditPage() {
                   <td>{formatDateTime(r.at)}</td>
                   <td>{actor(r)}</td>
                   <td>{actionLabel[r.action] ?? r.action}</td>
-                  <td className="muted" style={{ fontSize: 12 }}>{r.entity_id}</td>
+                  <td className="muted" style={{ fontSize: 12 }}>
+                    {r.entity_id}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -53,9 +68,15 @@ export default function AuditPage() {
       )}
       {pages > 1 && (
         <div className="row" style={{ justifyContent: 'center' }}>
-          <Button disabled={page <= 1} onClick={() => setPage(page - 1)}>Назад</Button>
-          <span className="muted">{page} из {pages}</span>
-          <Button disabled={page >= pages} onClick={() => setPage(page + 1)}>Вперёд</Button>
+          <Button disabled={page <= 1} onClick={() => setPage(page - 1)}>
+            Назад
+          </Button>
+          <span className="muted">
+            {page} из {pages}
+          </span>
+          <Button disabled={page >= pages} onClick={() => setPage(page + 1)}>
+            Вперёд
+          </Button>
         </div>
       )}
     </div>

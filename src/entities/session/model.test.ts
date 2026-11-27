@@ -45,7 +45,10 @@ describe('модель сессии', () => {
 
   it('регистрация создаёт клиента', async () => {
     const scope = fork();
-    await allSettled(registerFx, { scope, params: { email: 'new@example.com', password: 'password1', full_name: 'Новый', phone: '' } });
+    await allSettled(registerFx, {
+      scope,
+      params: { email: 'new@example.com', password: 'password1', full_name: 'Новый', phone: '' },
+    });
     expect(scope.getState($role)).toBe('customer');
   });
 

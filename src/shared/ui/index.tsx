@@ -1,6 +1,13 @@
 // Неоморфный UI-кит: тонкие обёртки над нативными элементами,
 // чтобы тесты могли находить их по ролям и подписям.
-import { useId, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import {
+  useId,
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
+} from 'react';
 
 type Variant = 'default' | 'primary' | 'danger';
 
@@ -11,11 +18,21 @@ export function Button({
   type = 'button',
   ...rest
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; small?: boolean }) {
-  const cls = ['neu-btn', variant !== 'default' && variant, small && 'small', className].filter(Boolean).join(' ');
+  const cls = ['neu-btn', variant !== 'default' && variant, small && 'small', className]
+    .filter(Boolean)
+    .join(' ');
   return <button type={type} className={cls} {...rest} />;
 }
 
-export function Card({ children, className = '', as: Tag = 'div' }: { children: ReactNode; className?: string; as?: 'div' | 'section' | 'article' | 'form' }) {
+export function Card({
+  children,
+  className = '',
+  as: Tag = 'div',
+}: {
+  children: ReactNode;
+  className?: string;
+  as?: 'div' | 'section' | 'article' | 'form';
+}) {
   return <Tag className={`neu-card ${className}`}>{children}</Tag>;
 }
 
@@ -30,18 +47,30 @@ export function TextField({ label, error, ...rest }: FieldProps & InputHTMLAttri
     <div className="field">
       <label htmlFor={id}>{label}</label>
       <input id={id} className="neu-input" aria-invalid={Boolean(error) || undefined} {...rest} />
-      {error && <em className="error" role="alert">{error}</em>}
+      {error && (
+        <em className="error" role="alert">
+          {error}
+        </em>
+      )}
     </div>
   );
 }
 
-export function TextArea({ label, error, ...rest }: FieldProps & TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function TextArea({
+  label,
+  error,
+  ...rest
+}: FieldProps & TextareaHTMLAttributes<HTMLTextAreaElement>) {
   const id = useId();
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
       <textarea id={id} className="neu-input" {...rest} />
-      {error && <em className="error" role="alert">{error}</em>}
+      {error && (
+        <em className="error" role="alert">
+          {error}
+        </em>
+      )}
     </div>
   );
 }
@@ -66,11 +95,23 @@ export function Select({
   );
 }
 
-export function Badge({ tone = 'info', children }: { tone?: 'ok' | 'bad' | 'info' | 'warn'; children: ReactNode }) {
+export function Badge({
+  tone = 'info',
+  children,
+}: {
+  tone?: 'ok' | 'bad' | 'info' | 'warn';
+  children: ReactNode;
+}) {
   return <span className={`badge ${tone}`}>{children}</span>;
 }
 
-export function Alert({ tone = 'error', children }: { tone?: 'error' | 'success' | 'info'; children: ReactNode }) {
+export function Alert({
+  tone = 'error',
+  children,
+}: {
+  tone?: 'error' | 'success' | 'info';
+  children: ReactNode;
+}) {
   return (
     <div className={`alert ${tone}`} role={tone === 'error' ? 'alert' : 'status'}>
       {children}
@@ -118,10 +159,24 @@ export function Tabs<T extends string>({
   );
 }
 
-export function Modal({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
+export function Modal({
+  title,
+  children,
+  onClose,
+}: {
+  title: string;
+  children: ReactNode;
+  onClose: () => void;
+}) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="neu-card modal" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
+      <div
+        className="neu-card modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2>{title}</h2>
         {children}
       </div>
@@ -130,13 +185,19 @@ export function Modal({ title, children, onClose }: { title: string; children: R
 }
 
 export function Empty({ children }: { children: ReactNode }) {
-  return <div className="neu-inset muted" style={{ textAlign: 'center' }}>{children}</div>;
+  return (
+    <div className="neu-inset muted" style={{ textAlign: 'center' }}>
+      {children}
+    </div>
+  );
 }
 
 export function Stat({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="neu-inset" role="figure" aria-label={label}>
-      <div className="muted" style={{ fontSize: 13, fontWeight: 700 }}>{label}</div>
+      <div className="muted" style={{ fontSize: 13, fontWeight: 700 }}>
+        {label}
+      </div>
       <div style={{ fontSize: 24, fontWeight: 800 }}>{value}</div>
     </div>
   );

@@ -16,7 +16,12 @@ export default function HotelsPage() {
     m.hotelsQuery.$error,
     m.citiesQuery.$data,
   ]);
-  const [change, submit, reset, goPage] = useUnit([m.filterChanged, m.searchSubmitted, m.filtersReset, m.pageChanged]);
+  const [change, submit, reset, goPage] = useUnit([
+    m.filterChanged,
+    m.searchSubmitted,
+    m.filtersReset,
+    m.pageChanged,
+  ]);
   const pages = Math.max(1, Math.ceil(total / m.PAGE_SIZE));
 
   const onSubmit = (e: FormEvent) => {
@@ -32,18 +37,29 @@ export default function HotelsPage() {
       </div>
       <Card>
         <form onSubmit={onSubmit} className="form-grid" aria-label="Поиск отелей">
-          <TextField label="Название" value={filters.q} onChange={(e) => change({ q: e.target.value })} placeholder="Например, Морской" />
+          <TextField
+            label="Название"
+            value={filters.q}
+            onChange={(e) => change({ q: e.target.value })}
+            placeholder="Например, Морской"
+          />
           <Select
             label="Город"
             value={filters.city}
             onChange={(e) => change({ city: e.target.value })}
-            options={[{ value: '', label: 'Любой' }, ...(cities?.items ?? []).map((c) => ({ value: c, label: c }))]}
+            options={[
+              { value: '', label: 'Любой' },
+              ...(cities?.items ?? []).map((c) => ({ value: c, label: c })),
+            ]}
           />
           <Select
             label="Звёзд от"
             value={String(filters.stars_min)}
             onChange={(e) => change({ stars_min: Number(e.target.value) })}
-            options={[{ value: '0', label: 'Любое' }, ...[1, 2, 3, 4, 5].map((n) => ({ value: String(n), label: `${n}+` }))]}
+            options={[
+              { value: '0', label: 'Любое' },
+              ...[1, 2, 3, 4, 5].map((n) => ({ value: String(n), label: `${n}+` })),
+            ]}
           />
           <Select
             label="Сортировка"
@@ -57,7 +73,9 @@ export default function HotelsPage() {
             ]}
           />
           <div className="row" style={{ alignSelf: 'end' }}>
-            <Button type="submit" variant="primary">Найти</Button>
+            <Button type="submit" variant="primary">
+              Найти
+            </Button>
             <Button onClick={() => reset()}>Сбросить</Button>
           </div>
         </form>
@@ -80,11 +98,15 @@ export default function HotelsPage() {
           </div>
           {pages > 1 && (
             <div className="row" style={{ justifyContent: 'center' }}>
-              <Button disabled={page <= 1} onClick={() => goPage(page - 1)}>Назад</Button>
+              <Button disabled={page <= 1} onClick={() => goPage(page - 1)}>
+                Назад
+              </Button>
               <span className="muted">
                 {page} из {pages}
               </span>
-              <Button disabled={page >= pages} onClick={() => goPage(page + 1)}>Вперёд</Button>
+              <Button disabled={page >= pages} onClick={() => goPage(page + 1)}>
+                Вперёд
+              </Button>
             </div>
           )}
         </>

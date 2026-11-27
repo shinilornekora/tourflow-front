@@ -11,7 +11,12 @@ export function DemoBanner() {
           <b>Демо-режим:</b> бэкенд эмулируется в браузере, данные хранятся только у вас.
         </span>
         <div className="row" style={{ gap: 8 }}>
-          <button type="button" className="neu-btn small" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+          <button
+            type="button"
+            className="neu-btn small"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+          >
             Демо-входы
           </button>
           <button
@@ -32,7 +37,9 @@ export function DemoBanner() {
             <tbody>
               {demoAccounts.map((a) => (
                 <tr key={a.email}>
-                  <td><b>{a.role}</b></td>
+                  <td>
+                    <b>{a.role}</b>
+                  </td>
                   <td>{a.email}</td>
                   <td>{a.password}</td>
                 </tr>

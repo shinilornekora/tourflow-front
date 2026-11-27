@@ -15,7 +15,9 @@ export const markAllRead = createRequest((_: void) => api.markAllRead());
 
 export const $items = createStore<Notification[]>([])
   .on(listQuery.fx.doneData, (_, d) => d.items)
-  .on(markRead.fx.doneData, (l, id) => l.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)))
+  .on(markRead.fx.doneData, (l, id) =>
+    l.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)),
+  )
   .on(markAllRead.fx.done, (l) => l.map((n) => ({ ...n, read_at: n.read_at ?? new Date().toISOString() })))
   .reset(sessionLost);
 

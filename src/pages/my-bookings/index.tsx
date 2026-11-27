@@ -8,7 +8,13 @@ import * as m from './model';
 
 export default function MyBookingsPage() {
   useGate(m.MyBookingsGate);
-  const [tab, split, visible, pending, error] = useUnit([m.$tab, m.$split, m.$visible, m.listQuery.$pending, m.listQuery.$error]);
+  const [tab, split, visible, pending, error] = useUnit([
+    m.$tab,
+    m.$split,
+    m.$visible,
+    m.listQuery.$pending,
+    m.listQuery.$error,
+  ]);
   const [setTab, askCancel, summary] = useUnit([m.tabChanged, m.cancelClicked, m.summaryQuery.$data]);
 
   return (
@@ -32,7 +38,9 @@ export default function MyBookingsPage() {
           <Stat label="Потрачено" value={formatMoney(summary.total_spent)} />
         </div>
       )}
-      {summary?.next_check_in && <p className="muted">Ближайший заезд: {formatDate(summary.next_check_in)}</p>}
+      {summary?.next_check_in && (
+        <p className="muted">Ближайший заезд: {formatDate(summary.next_check_in)}</p>
+      )}
       {error && <Alert>{error}</Alert>}
       {pending && visible.length === 0 ? (
         <Spinner />
@@ -71,7 +79,13 @@ export default function MyBookingsPage() {
 }
 
 function CancelModal() {
-  const [target, pending, error, dismiss, confirm] = useUnit([m.$toCancel, m.cancelRequest.$pending, m.cancelRequest.$error, m.cancelDismissed, m.cancelConfirmed]);
+  const [target, pending, error, dismiss, confirm] = useUnit([
+    m.$toCancel,
+    m.cancelRequest.$pending,
+    m.cancelRequest.$error,
+    m.cancelDismissed,
+    m.cancelConfirmed,
+  ]);
   const [reason, setReason] = useState('');
   if (!target) return null;
   return (
@@ -80,7 +94,11 @@ function CancelModal() {
         <p>
           {target.hotel_name}, {target.room_type_name}
         </p>
-        <TextField label="Причина (необязательно)" value={reason} onChange={(e) => setReason(e.target.value)} />
+        <TextField
+          label="Причина (необязательно)"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+        />
         {error && <Alert>{error}</Alert>}
         <div className="row">
           <Button onClick={dismiss}>Не отменять</Button>

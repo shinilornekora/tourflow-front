@@ -17,7 +17,8 @@ export function ReservationCard({ r, actions }: { r: Reservation; actions?: Reac
         <Badge tone={r.status === 'confirmed' ? 'ok' : 'bad'}>{statusLabel[r.status]}</Badge>
       </div>
       <p>
-        {formatDate(r.check_in)} — {formatDate(r.check_out)} · {r.nights} {plural(r.nights, 'ночь', 'ночи', 'ночей')} · гостей: {r.guests}
+        {formatDate(r.check_in)} — {formatDate(r.check_out)} · {r.nights}{' '}
+        {plural(r.nights, 'ночь', 'ночи', 'ночей')} · гостей: {r.guests}
       </p>
       <div className="row-between">
         <b>{formatMoney(r.total)}</b>

@@ -17,9 +17,13 @@ export const cancelConfirmed = createEvent<string>();
 
 export const $tab = createStore<Tab>('active').on(tabChanged, (_, t) => t);
 
-export const listQuery = createRequest((_: void) => fetchAll((page, page_size) => api.myReservations({ page, page_size })));
+export const listQuery = createRequest((_: void) =>
+  fetchAll((page, page_size) => api.myReservations({ page, page_size })),
+);
 export const summaryQuery = createRequest((_: void) => api.mySummary());
-export const cancelRequest = createRequest(({ id, reason }: { id: string; reason: string }) => api.cancelReservation(id, reason));
+export const cancelRequest = createRequest(({ id, reason }: { id: string; reason: string }) =>
+  api.cancelReservation(id, reason),
+);
 
 const $fromServer = createStore<Reservation[]>([]).on(listQuery.fx.doneData, (_, d) => d.items);
 

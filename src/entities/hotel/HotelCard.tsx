@@ -18,7 +18,9 @@ export function HotelCard({ hotel, to }: { hotel: Hotel; to: string }) {
         {hotel.status === 'inactive' && <Badge tone="bad">Отключён</Badge>}
       </div>
       <Stars n={hotel.stars} />
-      <p className="muted">{hotel.city}, {hotel.address}</p>
+      <p className="muted">
+        {hotel.city}, {hotel.address}
+      </p>
       {hotel.min_price && (
         <p>
           от <b>{formatMoney(hotel.min_price)}</b> <span className="muted">/ ночь</span>

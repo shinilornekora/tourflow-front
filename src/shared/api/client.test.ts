@@ -13,7 +13,9 @@ describe('HTTP-клиент', () => {
       }),
     );
     tokenStorage.set('abc');
-    await expect(request('/echo', { query: { a: 1, b: '', c: undefined, d: false, e: 'x' } })).resolves.toEqual({ ok: true });
+    await expect(
+      request('/echo', { query: { a: 1, b: '', c: undefined, d: false, e: 'x' } }),
+    ).resolves.toEqual({ ok: true });
     expect(seen!.auth).toBe('Bearer abc');
     expect(new URL(seen!.url).search).toBe('?a=1&e=x');
   });
@@ -21,7 +23,10 @@ describe('HTTP-клиент', () => {
   it('превращает ответ с ошибкой в ApiError с полями', async () => {
     server.use(
       http.post('*/api/fail', () =>
-        HttpResponse.json({ error: { code: 'validation', message: 'Плохо', fields: { name: 'пусто' } } }, { status: 422 }),
+        HttpResponse.json(
+          { error: { code: 'validation', message: 'Плохо', fields: { name: 'пусто' } } },
+          { status: 422 },
+        ),
       ),
     );
     const e = await request('/fail', { method: 'POST', body: {} }).catch((x: unknown) => x);
@@ -58,7 +63,9 @@ describe('HTTP-клиент', () => {
     onSessionChange((s) => sessions.push(s));
     server.use(
       http.post('*/api/auth/refresh', () => new HttpResponse(null, { status: 401 })),
-      http.get('*/api/protected', () => HttpResponse.json({ error: { code: 'unauthorized', message: 'Требуется вход' } }, { status: 401 })),
+      http.get('*/api/protected', () =>
+        HttpResponse.json({ error: { code: 'unauthorized', message: 'Требуется вход' } }, { status: 401 }),
+      ),
     );
     tokenStorage.set('stale');
     await expect(request('/protected')).rejects.toMatchObject({ status: 401 });
@@ -81,7 +88,10 @@ describe('HTTP-клиент', () => {
 
   it('сетевую ошибку отдаёт как ApiError(network)', async () => {
     server.use(http.get('*/api/down', () => HttpResponse.error()));
-    await expect(request('/down')).rejects.toMatchObject({ code: 'network', message: 'Нет связи с сервером' });
+    await expect(request('/down')).rejects.toMatchObject({
+      code: 'network',
+      message: 'Нет связи с сервером',
+    });
   });
 
   it('204 возвращает undefined', async () => {

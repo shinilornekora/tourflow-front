@@ -37,9 +37,19 @@ export default function ProfilePage() {
           </div>
           <p className="muted">{user.email}</p>
           {msg && <Alert tone={msg.tone}>{msg.text}</Alert>}
-          <TextField label="Имя и фамилия" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
-          <TextField label="Телефон" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-          <Button type="submit" variant="primary" disabled={pending}>Сохранить</Button>
+          <TextField
+            label="Имя и фамилия"
+            value={form.full_name}
+            onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+          />
+          <TextField
+            label="Телефон"
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          />
+          <Button type="submit" variant="primary" disabled={pending}>
+            Сохранить
+          </Button>
         </form>
       </Card>
       <PasswordForm />
@@ -72,9 +82,28 @@ function PasswordForm() {
       <form className="stack" onSubmit={submit} aria-label="Смена пароля">
         <h2 style={{ margin: 0 }}>Смена пароля</h2>
         {msg && <Alert tone={msg.tone}>{msg.text}</Alert>}
-        <TextField label="Текущий пароль" type="password" autoComplete="current-password" required value={form.current_password} onChange={(e) => setForm({ ...form, current_password: e.target.value })} error={fields.current_password} />
-        <TextField label="Новый пароль" type="password" autoComplete="new-password" required minLength={8} value={form.new_password} onChange={(e) => setForm({ ...form, new_password: e.target.value })} error={fields.new_password} />
-        <Button type="submit" disabled={pending}>Сменить пароль</Button>
+        <TextField
+          label="Текущий пароль"
+          type="password"
+          autoComplete="current-password"
+          required
+          value={form.current_password}
+          onChange={(e) => setForm({ ...form, current_password: e.target.value })}
+          error={fields.current_password}
+        />
+        <TextField
+          label="Новый пароль"
+          type="password"
+          autoComplete="new-password"
+          required
+          minLength={8}
+          value={form.new_password}
+          onChange={(e) => setForm({ ...form, new_password: e.target.value })}
+          error={fields.new_password}
+        />
+        <Button type="submit" disabled={pending}>
+          Сменить пароль
+        </Button>
       </form>
     </Card>
   );

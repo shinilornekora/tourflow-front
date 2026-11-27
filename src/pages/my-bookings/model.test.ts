@@ -11,7 +11,12 @@ describe('кабинет клиента: заказы', () => {
         reservation({ id: 'late', check_in: '2026-12-20', check_out: '2026-12-22' }),
         reservation({ id: 'soon', check_in: '2026-12-01', check_out: '2026-12-03' }),
         reservation({ id: 'past', check_in: '2026-10-01', check_out: '2026-10-03' }),
-        reservation({ id: 'cancelled', check_in: '2026-12-05', check_out: '2026-12-06', status: 'cancelled' }),
+        reservation({
+          id: 'cancelled',
+          check_in: '2026-12-05',
+          check_out: '2026-12-06',
+          status: 'cancelled',
+        }),
       ],
       '2026-11-27',
     );
@@ -27,7 +32,9 @@ describe('кабинет клиента: заказы', () => {
     await allSettled(m.cancelClicked, { scope, params: scope.getState(m.$split).active[0]! });
     await allSettled(m.cancelConfirmed, { scope, params: 'Планы поменялись' });
     expect(scope.getState(m.$split).active).toHaveLength(0);
-    expect(scope.getState(m.$split).history.find((r) => r.id === 'r-1')?.cancel_reason).toBe('Планы поменялись');
+    expect(scope.getState(m.$split).history.find((r) => r.id === 'r-1')?.cancel_reason).toBe(
+      'Планы поменялись',
+    );
     expect(scope.getState(m.$toCancel)).toBeNull();
   });
 });
