@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from '@/test/render';
@@ -45,8 +45,10 @@ describe('администратор', () => {
 
   it('отключает отель — он пропадает из каталога', async () => {
     const user = userEvent.setup();
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
     renderApp('/manage/hotels/h-mount', { as: 'admin' });
     await user.click(await screen.findByRole('button', { name: 'Отключить' }));
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining('будущие брони будут отменены'));
     expect(await screen.findByText('Отключён')).toBeInTheDocument();
     await user.click(screen.getByRole('link', { name: 'Отели' }));
     expect(await screen.findByRole('link', { name: 'Морской бриз' })).toBeInTheDocument();

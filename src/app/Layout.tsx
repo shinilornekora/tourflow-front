@@ -1,14 +1,24 @@
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 import { $role, $user, logoutFx } from '@/entities/session/model';
-import { $unread } from '@/entities/notification/model';
+import { $unread, pollTick } from '@/entities/notification/model';
 import { roleLabel } from '@/shared/lib/format';
 import { Button, Spinner } from '@/shared/ui';
 
 export function Layout() {
   const [user, role, unread, logout] = useUnit([$user, $role, $unread, logoutFx]);
   const navigate = useNavigate();
+  const tick = useUnit(pollTick);
+  const authed = user !== null;
+  // Опрос счётчика уведомлений, пока пользователь вошёл и вкладка открыта.
+  useEffect(() => {
+    if (!authed) return;
+    const id = setInterval(() => {
+      if (document.visibilityState !== 'hidden') tick();
+    }, 30_000);
+    return () => clearInterval(id);
+  }, [authed, tick]);
 
   return (
     <>

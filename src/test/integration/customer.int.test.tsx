@@ -47,6 +47,45 @@ describe('клиент: от поиска до брони и истории за
     expect(screen.getAllByRole('article', { name: 'Бронь Морской бриз' })).toHaveLength(2);
   });
 
+  it('новая бронь видна в кабинете сразу, даже если модель чтения ещё не догнала', async () => {
+    const user = userEvent.setup();
+    db.projectionLag = true;
+    renderApp('/hotels/h-mount', { as: 'customer' });
+    await user.click(await screen.findByRole('button', { name: 'Показать номера' }));
+    await user.click(await screen.findByRole('button', { name: 'Забронировать' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Подтвердить' }));
+    await user.click(await screen.findByRole('link', { name: 'К моим броням' }));
+
+    expect(await screen.findByRole('article', { name: 'Бронь Горный приют' })).toBeInTheDocument();
+    expect(db.projected.some((r) => r.hotel_name === 'Горный приют')).toBe(false);
+  });
+
+  it('показывает сводку кабинета и запрещает отмену в день заезда', async () => {
+    db.reservations.push({ ...db.reservations[0]!, id: 'r-now', check_in: '2000-01-01', check_out: '2099-12-31' });
+    db.projected = structuredClone(db.reservations);
+    renderApp('/cabinet/bookings', { as: 'customer' });
+    expect(await screen.findByRole('figure', { name: 'Предстоит поездок' })).toHaveTextContent('1');
+    expect(screen.getByRole('figure', { name: 'Сейчас в поездке' })).toHaveTextContent('1');
+    await screen.findByRole('tab', { name: 'Предстоящие (2)' });
+    expect(screen.getAllByRole('button', { name: 'Отменить' })).toHaveLength(1);
+    expect(screen.getByText('Отмена возможна только до дня заезда')).toBeInTheDocument();
+  });
+
+  it('клиент меняет пароль', async () => {
+    const user = userEvent.setup();
+    renderApp('/cabinet/profile', { as: 'customer' });
+    const form = await screen.findByRole('form', { name: 'Смена пароля' });
+    await user.type(within(form).getByLabelText('Текущий пароль'), 'wrong-one');
+    await user.type(within(form).getByLabelText('Новый пароль'), 'new-password');
+    await user.click(within(form).getByRole('button', { name: 'Сменить пароль' }));
+    expect(await within(form).findByText('Неверный текущий пароль')).toBeInTheDocument();
+    await user.clear(within(form).getByLabelText('Текущий пароль'));
+    await user.type(within(form).getByLabelText('Текущий пароль'), 'password1');
+    await user.click(within(form).getByRole('button', { name: 'Сменить пароль' }));
+    expect(await within(form).findByText('Пароль изменён')).toBeInTheDocument();
+    expect(db.users.find((u) => u.id === 'u-cust')?.password).toBe('new-password');
+  });
+
   it('клиент отменяет бронь, и она уходит в историю', async () => {
     const user = userEvent.setup();
     renderApp('/cabinet/bookings', { as: 'customer' });

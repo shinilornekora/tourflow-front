@@ -27,3 +27,7 @@ export const $unread = createStore(0)
 
 sample({ clock: notificationsRequested, target: listQuery.start });
 sample({ clock: [unreadRequested, sessionReceived], fn: () => undefined, target: unreadQuery.start });
+
+/** Тик опроса бейджа в шапке (раз в 30 с, см. Layout и docs/API.md бэкенда). */
+export const pollTick = createEvent();
+sample({ clock: pollTick, fn: () => undefined, target: unreadQuery.start });

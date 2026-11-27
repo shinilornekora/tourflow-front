@@ -42,6 +42,7 @@ export interface Hotel {
   photo_url: string;
   status: HotelStatus;
   manager_ids?: string[];
+  /** Есть только в списках (HotelListItem). */
   min_price?: Money;
   room_type_count?: number;
   created_at: string;
@@ -98,7 +99,38 @@ export interface Reservation {
   created_at: string;
   cancelled_at?: string;
   cancel_reason?: string;
+  /** Только в ответах booking-query. */
+  cancelled_by_role?: Role | 'system';
+  /** 1 — подтверждена, 2 — отменена; по ней сливаем ответы команд и модели чтения. */
   version: number;
+}
+
+export interface CustomerSummary {
+  upcoming: number;
+  in_progress: number;
+  completed: number;
+  cancelled: number;
+  total_spent: Money;
+  next_check_in: string | null;
+}
+
+export interface HotelStats {
+  hotel_id: string;
+  hotel_name: string;
+  confirmed: number;
+  cancelled: number;
+  nights: number;
+  revenue: Money;
+}
+
+export interface HotelSummary {
+  confirmed: number;
+  cancelled: number;
+  upcoming: number;
+  nights: number;
+  guests: number;
+  revenue: Money;
+  by_hotel: HotelStats[];
 }
 
 export interface Notification {
@@ -115,7 +147,7 @@ export interface AuditRecord {
   id: number;
   hotel_id: string;
   actor_id: string | null;
-  actor_role: string;
+  actor_role: Role | 'system';
   action: string;
   entity_id: string;
   details: Record<string, unknown>;

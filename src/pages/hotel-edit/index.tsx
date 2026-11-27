@@ -28,7 +28,7 @@ function HotelEdit({ id }: { id: string }) {
     <div className="page stack">
       <Link to="/manage/hotels">← К отелям</Link>
       {actionError && <Alert>{actionError}</Alert>}
-      <HotelForm hotel={isNew ? null : details!.hotel} canEdit={role === 'admin' || !isNew} />
+      <HotelForm hotel={isNew ? null : details!.hotel} canEdit={role === 'admin' || !isNew} isAdmin={role === 'admin'} />
       {!isNew && details && (
         <>
           <RoomTypes hotelId={details.hotel.id} rooms={details.room_types} />
@@ -39,7 +39,7 @@ function HotelEdit({ id }: { id: string }) {
   );
 }
 
-function HotelForm({ hotel, canEdit }: { hotel: Hotel | null; canEdit: boolean }) {
+function HotelForm({ hotel, canEdit, isAdmin }: { hotel: Hotel | null; canEdit: boolean; isAdmin: boolean }) {
   const navigate = useNavigate();
   const [save, pending, error, toggle] = useUnit([m.saveHotel.fx, m.saveHotel.$pending, m.saveHotel.$error, m.setStatus.start]);
   const [form, setForm] = useState<HotelInput>(emptyHotel);
@@ -71,13 +71,20 @@ function HotelForm({ hotel, canEdit }: { hotel: Hotel | null; canEdit: boolean }
           {hotel && (
             <div className="row">
               <Badge tone={hotel.status === 'active' ? 'ok' : 'bad'}>{hotel.status === 'active' ? 'Активен' : 'Отключён'}</Badge>
-              <Button
-                small
-                variant={hotel.status === 'active' ? 'danger' : 'primary'}
-                onClick={() => toggle({ id: hotel.id, status: hotel.status === 'active' ? 'inactive' : 'active', version: hotel.version })}
-              >
-                {hotel.status === 'active' ? 'Отключить' : 'Включить'}
-              </Button>
+              <Link className="neu-btn small" to={`/manage/hotels/${hotel.id}/audit`}>Журнал</Link>
+              {/* Включать и отключать отель может только админ; отключение отменяет будущие брони. */}
+              {isAdmin && (
+                <Button
+                  small
+                  variant={hotel.status === 'active' ? 'danger' : 'primary'}
+                  onClick={() => {
+                    if (hotel.status === 'active' && !window.confirm('Отключить отель? Все будущие брони будут отменены, гости получат уведомления.')) return;
+                    toggle({ id: hotel.id, status: hotel.status === 'active' ? 'inactive' : 'active', version: hotel.version });
+                  }}
+                >
+                  {hotel.status === 'active' ? 'Отключить' : 'Включить'}
+                </Button>
+              )}
             </div>
           )}
         </div>

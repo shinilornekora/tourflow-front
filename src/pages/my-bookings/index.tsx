@@ -2,13 +2,14 @@ import { useGate, useUnit } from 'effector-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ReservationCard } from '@/entities/reservation/ReservationCard';
-import { Alert, Button, Empty, Modal, Spinner, Tabs, TextField } from '@/shared/ui';
+import { Alert, Button, Empty, Modal, Spinner, Stat, Tabs, TextField } from '@/shared/ui';
+import { formatDate, formatMoney } from '@/shared/lib/format';
 import * as m from './model';
 
 export default function MyBookingsPage() {
   useGate(m.MyBookingsGate);
   const [tab, split, visible, pending, error] = useUnit([m.$tab, m.$split, m.$visible, m.listQuery.$pending, m.listQuery.$error]);
-  const [setTab, askCancel] = useUnit([m.tabChanged, m.cancelClicked]);
+  const [setTab, askCancel, summary] = useUnit([m.tabChanged, m.cancelClicked, m.summaryQuery.$data]);
 
   return (
     <div className="page stack">
@@ -23,6 +24,15 @@ export default function MyBookingsPage() {
           ]}
         />
       </div>
+      {summary && (
+        <div className="grid" aria-label="Сводка по заказам" role="group">
+          <Stat label="Предстоит поездок" value={summary.upcoming} />
+          <Stat label="Сейчас в поездке" value={summary.in_progress} />
+          <Stat label="Завершено" value={summary.completed} />
+          <Stat label="Потрачено" value={formatMoney(summary.total_spent)} />
+        </div>
+      )}
+      {summary?.next_check_in && <p className="muted">Ближайший заезд: {formatDate(summary.next_check_in)}</p>}
       {error && <Alert>{error}</Alert>}
       {pending && visible.length === 0 ? (
         <Spinner />
@@ -43,10 +53,12 @@ export default function MyBookingsPage() {
               key={r.id}
               r={r}
               actions={
-                tab === 'active' ? (
+                m.canCustomerCancel(r) ? (
                   <Button small variant="danger" onClick={() => askCancel(r)}>
                     Отменить
                   </Button>
+                ) : tab === 'active' ? (
+                  <span className="muted">Отмена возможна только до дня заезда</span>
                 ) : undefined
               }
             />

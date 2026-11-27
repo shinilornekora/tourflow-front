@@ -1,9 +1,11 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import { api } from '@/shared/api/endpoints';
+import { api, fetchAll } from '@/shared/api/endpoints';
 import type { Reservation } from '@/shared/api/types';
 import { createRequest } from '@/shared/lib/request';
 import { isPast, isoDay } from '@/shared/lib/format';
+import { $committed, mergeCommitted, reservationCommitted } from '@/entities/reservation/model';
+import { $user } from '@/entities/session/model';
 
 export type Tab = 'active' | 'history';
 
@@ -15,16 +17,25 @@ export const cancelConfirmed = createEvent<string>();
 
 export const $tab = createStore<Tab>('active').on(tabChanged, (_, t) => t);
 
-export const listQuery = createRequest((_: void) => api.myReservations({ page_size: 100 }));
+export const listQuery = createRequest((_: void) => fetchAll((page, page_size) => api.myReservations({ page, page_size })));
+export const summaryQuery = createRequest((_: void) => api.mySummary());
 export const cancelRequest = createRequest(({ id, reason }: { id: string; reason: string }) => api.cancelReservation(id, reason));
 
-export const $reservations = createStore<Reservation[]>([])
-  .on(listQuery.fx.doneData, (_, d) => d.items)
-  .on(cancelRequest.fx.doneData, (list, r) => list.map((x) => (x.id === r.id ? r : x)));
+const $fromServer = createStore<Reservation[]>([]).on(listQuery.fx.doneData, (_, d) => d.items);
+
+/** Список из booking-query + ответы наших команд, которые модель чтения ещё не увидела. */
+export const $reservations = combine($fromServer, $committed, $user, (list, committed, user) =>
+  mergeCommitted(list, committed, (r) => r.customer_id === user?.id),
+);
 
 export const $toCancel = createStore<Reservation | null>(null)
   .on(cancelClicked, (_, r) => r)
   .reset([cancelDismissed, cancelRequest.fx.done]);
+
+/** Клиент может отменить бронь только до дня заезда (правило booking). */
+export function canCustomerCancel(r: Reservation, today: string = isoDay()): boolean {
+  return r.status === 'confirmed' && r.check_in > today;
+}
 
 const split = (list: Reservation[], today: string) => {
   const active: Reservation[] = [];
@@ -41,7 +52,7 @@ const split = (list: Reservation[], today: string) => {
 export const $split = $reservations.map((l) => split(l, isoDay()));
 export const $visible = combine($split, $tab, (s, t) => s[t]);
 
-sample({ clock: MyBookingsGate.open, target: listQuery.start });
+sample({ clock: MyBookingsGate.open, target: [listQuery.start, summaryQuery.start] });
 sample({
   clock: cancelConfirmed,
   source: $toCancel,
@@ -50,5 +61,8 @@ sample({
   target: cancelRequest.start,
 });
 sample({ clock: [cancelDismissed, cancelClicked], target: cancelRequest.reset });
+sample({ clock: cancelRequest.fx.doneData, target: reservationCommitted });
+// Сводку перечитываем в фоне: её считает модель чтения, она догонит.
+sample({ clock: cancelRequest.fx.done, fn: () => undefined, target: summaryQuery.start });
 
 export const __test = { split };

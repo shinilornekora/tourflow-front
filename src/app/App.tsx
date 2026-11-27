@@ -19,6 +19,7 @@ const ManageHotelsPage = lazy(() => import('@/pages/manage-hotels'));
 const HotelEditPage = lazy(() => import('@/pages/hotel-edit'));
 const ManageBookingsPage = lazy(() => import('@/pages/manage-bookings'));
 const UsersPage = lazy(() => import('@/pages/admin-users'));
+const AuditPage = lazy(() => import('@/pages/audit'));
 
 export function App() {
   const [start, received, lost] = useUnit([appStarted, sessionReceived, sessionLost]);
@@ -52,6 +53,7 @@ export function App() {
           </Route>
           <Route element={<RequireRole roles={['hotel_manager', 'admin']} />}>
             <Route path="manage/hotels/:id" element={<HotelEditPage />} />
+            <Route path="manage/hotels/:id/audit" element={<AuditPage />} />
           </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />

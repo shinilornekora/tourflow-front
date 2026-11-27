@@ -1,33 +1,22 @@
 import { useEffect, useState } from 'react';
-import { createEvent, createStore, sample } from 'effector';
 import { useUnit } from 'effector-react';
-import { api, type ReservationQuery } from '@/shared/api/endpoints';
-import type { Reservation, ReservationStatus } from '@/shared/api/types';
-import { createRequest } from '@/shared/lib/request';
+import type { ReservationStatus } from '@/shared/api/types';
 import { ReservationCard } from '@/entities/reservation/ReservationCard';
-import { Alert, Button, Card, Empty, Select, Spinner } from '@/shared/ui';
+import { formatMoney } from '@/shared/lib/format';
+import { Alert, Button, Card, Empty, Modal, Select, Spinner, Stat, TextField } from '@/shared/ui';
 import { managedQuery } from '@/pages/manage-hotels';
-
-export const listQuery = createRequest((q: ReservationQuery) => api.hotelReservations({ ...q, page_size: 100 }));
-export const cancelRequest = createRequest((id: string) => api.cancelReservation(id, 'Отменено менеджером отеля'));
-export const filtersApplied = createEvent<ReservationQuery>();
-
-export const $list = createStore<Reservation[]>([])
-  .on(listQuery.fx.doneData, (_, d) => d.items)
-  .on(cancelRequest.fx.doneData, (l, r) => l.map((x) => (x.id === r.id ? r : x)));
-
-sample({ clock: filtersApplied, target: listQuery.start });
+import * as m from './model';
 
 export default function ManageBookingsPage() {
-  const [hotels, loadHotels, list, pending, error, cancelError, apply, cancel] = useUnit([
+  const [hotels, loadHotels, list, pending, error, summary, apply, askCancel] = useUnit([
     managedQuery.$data,
     managedQuery.start,
-    $list,
-    listQuery.$pending,
-    listQuery.$error,
-    cancelRequest.$error,
-    filtersApplied,
-    cancelRequest.start,
+    m.$list,
+    m.listQuery.$pending,
+    m.listQuery.$error,
+    m.summaryQuery.$data,
+    m.filtersApplied,
+    m.cancelClicked,
   ]);
   const [hotelId, setHotelId] = useState('');
   const [status, setStatus] = useState<ReservationStatus | ''>('');
@@ -57,7 +46,15 @@ export default function ManageBookingsPage() {
           />
         </div>
       </Card>
-      {(error || cancelError) && <Alert>{error ?? cancelError}</Alert>}
+      {summary && (
+        <div className="grid" role="group" aria-label="Сводка по броням">
+          <Stat label="Подтверждено" value={summary.confirmed} />
+          <Stat label="Предстоит заездов" value={summary.upcoming} />
+          <Stat label="Отменено" value={summary.cancelled} />
+          <Stat label="Выручка" value={formatMoney(summary.revenue)} />
+        </div>
+      )}
+      {error && <Alert>{error}</Alert>}
       {pending && list.length === 0 ? (
         <Spinner />
       ) : list.length === 0 ? (
@@ -69,14 +66,45 @@ export default function ManageBookingsPage() {
               key={r.id}
               r={r}
               actions={
-                r.status === 'confirmed' ? (
-                  <Button small variant="danger" onClick={() => cancel(r.id)}>Отменить</Button>
+                m.canStaffCancel(r) ? (
+                  <Button small variant="danger" onClick={() => askCancel(r)}>Отменить</Button>
                 ) : undefined
               }
             />
           ))}
         </div>
       )}
+      <CancelModal />
     </div>
+  );
+}
+
+function CancelModal() {
+  const [target, pending, error, dismiss, confirm] = useUnit([m.$toCancel, m.cancelRequest.$pending, m.cancelRequest.$error, m.cancelDismissed, m.cancelConfirmed]);
+  const [reason, setReason] = useState('');
+  useEffect(() => setReason(''), [target]);
+  if (!target) return null;
+  return (
+    <Modal title="Отменить бронь гостя?" onClose={dismiss}>
+      <form
+        className="stack"
+        onSubmit={(e) => {
+          e.preventDefault();
+          confirm(reason);
+        }}
+      >
+        <p>
+          {target.hotel_name}, {target.room_type_name}
+        </p>
+        <TextField label="Причина (обязательно, её увидит гость)" required value={reason} onChange={(e) => setReason(e.target.value)} />
+        {error && <Alert>{error}</Alert>}
+        <div className="row">
+          <Button onClick={dismiss}>Не отменять</Button>
+          <Button type="submit" variant="danger" disabled={pending || reason.trim() === ''}>
+            Отменить бронь
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

@@ -5,6 +5,7 @@ import type { Availability, Reservation } from '@/shared/api/types';
 import { createRequest } from '@/shared/lib/request';
 import { isoDay, nightsBetween } from '@/shared/lib/format';
 import { newKey } from '@/shared/lib/id';
+import { reservationCommitted } from '@/entities/reservation/model';
 
 export const HotelGate = createGate<{ id: string }>();
 
@@ -72,6 +73,9 @@ sample({
 });
 
 sample({ clock: bookingClosed, target: bookRequest.reset });
+
+// Модель чтения узнает о брони позже — запоминаем ответ команды.
+sample({ clock: bookRequest.fx.doneData, target: reservationCommitted });
 
 // После брони остатки изменились — перезапрашиваем доступность.
 sample({ clock: bookRequest.fx.done, target: searchSubmitted });

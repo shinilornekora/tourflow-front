@@ -132,3 +132,12 @@ export function Modal({ title, children, onClose }: { title: string; children: R
 export function Empty({ children }: { children: ReactNode }) {
   return <div className="neu-inset muted" style={{ textAlign: 'center' }}>{children}</div>;
 }
+
+export function Stat({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="neu-inset" role="figure" aria-label={label}>
+      <div className="muted" style={{ fontSize: 13, fontWeight: 700 }}>{label}</div>
+      <div style={{ fontSize: 24, fontWeight: 800 }}>{value}</div>
+    </div>
+  );
+}

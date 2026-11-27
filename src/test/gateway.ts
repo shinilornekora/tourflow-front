@@ -10,7 +10,12 @@ export interface Db {
   users: DbUser[];
   hotels: Hotel[];
   roomTypes: RoomType[];
+  /** Модель записи (booking). */
   reservations: Reservation[];
+  /** Модель чтения (booking-query): догоняет reservations через project(). */
+  projected: Reservation[];
+  /** true — booking-query «отстаёт»: команды не попадают в списки, пока не вызван project(). */
+  projectionLag: boolean;
   notifications: Notification[];
   /** refresh-cookie: id пользователя, чья сессия «в браузере». */
   refreshUser: string | null;
@@ -19,7 +24,7 @@ export interface Db {
 }
 
 export function createDb(): Db {
-  return {
+  const d: Db = {
     users: Object.values(users).map((u) => ({ ...u })),
     hotels: [hotel(), hotel({ id: 'h-mount', name: 'Горный приют', city: 'Красная Поляна', address: 'Эстонская, 12', stars: 3, manager_ids: [], min_price: { amount: 350000, currency: 'RUB' } })],
     roomTypes: [roomType(), roomType({ id: 'rt-mount', hotel_id: 'h-mount', name: 'Шале', capacity: 4, price: { amount: 350000, currency: 'RUB' } })],
@@ -29,11 +34,24 @@ export function createDb(): Db {
       reservation({ id: 'r-cancel', check_in: '2099-08-01', check_out: '2099-08-02', nights: 1, status: 'cancelled', cancel_reason: 'Передумал' }),
     ],
     notifications: [notification()],
+    projected: [],
+    projectionLag: false,
     refreshUser: null,
     idempotency: new Map(),
     seq: 100,
   };
+  d.projected = structuredClone(d.reservations);
+  return d;
 }
+
+/** Доставка событий в booking-query (Kafka → проектор). */
+export function project() {
+  db.projected = structuredClone(db.reservations);
+}
+const afterCommand = () => {
+  if (!db.projectionLag) project();
+};
+const today = () => new Date().toISOString().slice(0, 10);
 
 export let db = createDb();
 export function resetDb() {
@@ -62,7 +80,13 @@ function withUser(req: Request, roles: string[] | null, fn: (u: DbUser) => Respo
 }
 
 const strip = ({ password: _p, ...u }: DbUser): User => u;
-const paged = <T,>(items: T[]) => ({ items, page: 1, page_size: items.length, total: items.length });
+/** Пагинация как у httpx.ParsePage: page_size молча режется до max. */
+function paged<T>(req: Request, items: T[], def = 20, max = 100) {
+  const p = new URL(req.url).searchParams;
+  const page = Math.max(1, Number(p.get('page')) || 1);
+  const size = Math.min(max, Math.max(1, Number(p.get('page_size')) || def));
+  return { items: items.slice((page - 1) * size, page * size), page, page_size: size, total: items.length };
+}
 const id = (p: string) => `${p}-${++db.seq}`;
 
 const hotelView = (h: Hotel): Hotel => {
@@ -104,13 +128,30 @@ export const handlers = [
       return HttpResponse.json(strip(u));
     }),
   ),
+  http.post(`${API}/users/me/password`, ({ request }) =>
+    withUser(request, null, async (u) => {
+      const b = (await request.json()) as { current_password: string; new_password: string };
+      if (b.current_password !== u.password) return err(422, 'validation', 'Проверьте поля', { current_password: 'Неверный текущий пароль' });
+      u.password = b.new_password;
+      return new HttpResponse(null, { status: 204 });
+    }),
+  ),
+  http.get(`${API}/audit`, ({ request }) =>
+    withUser(request, ['hotel_manager', 'admin'], () => {
+      const hid = new URL(request.url).searchParams.get('hotel_id');
+      const items = db.reservations
+        .filter((r) => r.hotel_id === hid)
+        .map((r, i) => ({ id: i + 1, hotel_id: r.hotel_id, actor_id: r.customer_id, actor_role: 'customer' as const, action: 'reservation_created', entity_id: r.id, details: {}, at: r.created_at }));
+      return HttpResponse.json(paged(request, items, 20, 100));
+    }),
+  ),
   http.get(`${API}/users`, ({ request }) =>
     withUser(request, ['admin'], () => {
       const p = new URL(request.url).searchParams;
       const role = p.get('role');
       const q = (p.get('q') ?? '').toLowerCase();
       const items = db.users.filter((u) => (!role || u.role === role) && (!q || `${u.full_name} ${u.email}`.toLowerCase().includes(q)));
-      return HttpResponse.json(paged(items.map(strip)));
+      return HttpResponse.json(paged(request, items.map(strip)));
     }),
   ),
   http.patch(`${API}/users/:id/role`, ({ request, params }) =>
@@ -126,7 +167,7 @@ export const handlers = [
   http.get(`${API}/cities`, () => HttpResponse.json({ items: [...new Set(db.hotels.map((h) => h.city))].sort() })),
   http.get(`${API}/hotels/managed`, ({ request }) =>
     withUser(request, ['hotel_manager', 'admin'], (u) =>
-      HttpResponse.json(paged(db.hotels.filter((h) => u.role === 'admin' || h.manager_ids?.includes(u.id)).map(hotelView))),
+      HttpResponse.json(paged(request, db.hotels.filter((h) => u.role === 'admin' || h.manager_ids?.includes(u.id)).map(hotelView), 12, 50)),
     ),
   ),
   http.get(`${API}/hotels`, ({ request }) => {
@@ -138,7 +179,7 @@ export const handlers = [
       .filter((h) => h.status === 'active')
       .filter((h) => (!q || h.name.toLowerCase().includes(q)) && (!city || h.city === city) && h.stars >= stars)
       .map(hotelView);
-    return HttpResponse.json(paged(items));
+    return HttpResponse.json(paged(request, items, 12, 50));
   }),
   http.get(`${API}/hotels/:id`, ({ params }) => {
     const h = db.hotels.find((x) => x.id === params.id);
@@ -165,7 +206,7 @@ export const handlers = [
     }),
   ),
   http.patch(`${API}/hotels/:id/status`, ({ request, params }) =>
-    withUser(request, ['admin', 'hotel_manager'], async () => {
+    withUser(request, ['admin'], async () => {
       const h = db.hotels.find((x) => x.id === params.id)!;
       h.status = ((await request.json()) as { status: Hotel['status'] }).status;
       h.version++;
@@ -213,6 +254,7 @@ export const handlers = [
 
   // ---------- booking ----------
   http.get(`${API}/availability`, ({ request }) => {
+    const staff = ['admin', 'hotel_manager'].includes(auth(request)?.role ?? '');
     const p = new URL(request.url).searchParams;
     const guests = Number(p.get('guests'));
     const nights = Math.round((Date.parse(p.get('check_out')!) - Date.parse(p.get('check_in')!)) / 86_400_000);
@@ -221,7 +263,8 @@ export const handlers = [
       .map((r) => {
         const busy = db.reservations.filter((x) => x.room_type_id === r.id && x.status === 'confirmed' && x.check_in < p.get('check_out')! && x.check_out > p.get('check_in')!).length;
         return { room_type_id: r.id, name: r.name, capacity: r.capacity, total_rooms: r.total_rooms, free: Math.max(0, r.total_rooms - busy), price_per_night: r.price, total_price: { amount: r.price.amount * nights, currency: 'RUB' } };
-      });
+      })
+      .filter((a) => staff || a.free > 0);
     return HttpResponse.json({ items });
   }),
   http.post(`${API}/reservations`, ({ request }) =>
@@ -238,29 +281,80 @@ export const handlers = [
       db.reservations.push(r);
       db.idempotency.set(key, r);
       db.notifications.unshift(notification({ id: id('n'), title: 'Бронь подтверждена', body: `${h.name}, ${rt.name}`, reservation_id: r.id }));
+      afterCommand();
       return HttpResponse.json(r, { status: 201 });
     }),
   ),
+  // ---------- booking-query: читает только проекцию ----------
+  http.get(`${API}/reservations/my/summary`, ({ request }) =>
+    withUser(request, ['customer'], (u) => {
+      const mine = db.projected.filter((r) => r.customer_id === u.id);
+      const ok = mine.filter((r) => r.status === 'confirmed');
+      const t = today();
+      const upcoming = ok.filter((r) => r.check_in > t);
+      return HttpResponse.json({
+        upcoming: upcoming.length,
+        in_progress: ok.filter((r) => r.check_in <= t && r.check_out > t).length,
+        completed: ok.filter((r) => r.check_out <= t).length,
+        cancelled: mine.length - ok.length,
+        total_spent: { amount: ok.reduce((s, r) => s + r.total.amount, 0), currency: 'RUB' },
+        next_check_in: upcoming.map((r) => r.check_in).sort()[0] ?? null,
+      });
+    }),
+  ),
   http.get(`${API}/reservations/my`, ({ request }) =>
-    withUser(request, null, (u) => HttpResponse.json(paged(db.reservations.filter((r) => r.customer_id === u.id)))),
+    withUser(request, ['customer'], (u) => {
+      const status = new URL(request.url).searchParams.get('status');
+      const items = db.projected
+        .filter((r) => r.customer_id === u.id && (!status || r.status === status))
+        .sort((a, b) => b.check_in.localeCompare(a.check_in));
+      return HttpResponse.json(paged(request, items, 10, 50));
+    }),
+  ),
+  http.get(`${API}/reservations/summary`, ({ request }) =>
+    withUser(request, ['hotel_manager', 'admin'], (u) => {
+      const hid = new URL(request.url).searchParams.get('hotel_id');
+      const allowed = db.hotels.filter((h) => u.role === 'admin' || h.manager_ids?.includes(u.id)).map((h) => h.id);
+      const list = db.projected.filter((r) => allowed.includes(r.hotel_id) && (!hid || r.hotel_id === hid));
+      const ok = list.filter((r) => r.status === 'confirmed');
+      return HttpResponse.json({
+        confirmed: ok.length,
+        cancelled: list.length - ok.length,
+        upcoming: ok.filter((r) => r.check_in >= today()).length,
+        nights: ok.reduce((s, r) => s + r.nights, 0),
+        guests: ok.reduce((s, r) => s + r.guests, 0),
+        revenue: { amount: ok.reduce((s, r) => s + r.total.amount, 0), currency: 'RUB' },
+        by_hotel: [],
+      });
+    }),
   ),
   http.get(`${API}/reservations`, ({ request }) =>
     withUser(request, ['hotel_manager', 'admin'], (u) => {
       const p = new URL(request.url).searchParams;
       const allowed = db.hotels.filter((h) => u.role === 'admin' || h.manager_ids?.includes(u.id)).map((h) => h.id);
-      const items = db.reservations.filter(
+      const items = db.projected.filter(
         (r) => allowed.includes(r.hotel_id) && (!p.get('hotel_id') || r.hotel_id === p.get('hotel_id')) && (!p.get('status') || r.status === p.get('status')),
       );
-      return HttpResponse.json(paged(items));
+      return HttpResponse.json(paged(request, items, 10, 50));
+    }),
+  ),
+  http.get(`${API}/reservations/:id`, ({ request, params }) =>
+    withUser(request, null, () => {
+      const r = db.projected.find((x) => x.id === params.id);
+      return r ? HttpResponse.json(r) : err(404, 'not_found', 'Бронь не найдена');
     }),
   ),
   http.post(`${API}/reservations/:id/cancel`, ({ request, params }) =>
-    withUser(request, null, async () => {
+    withUser(request, null, async (u) => {
       const r = db.reservations.find((x) => x.id === params.id);
-      if (!r) return err(404, 'not_found', 'Бронь не найдена');
+      if (!r || (u.role === 'customer' && r.customer_id !== u.id)) return err(404, 'not_found', 'Бронь не найдена');
       if (r.status === 'cancelled') return err(409, 'already_cancelled', 'Бронь уже отменена');
       const { reason } = (await request.json()) as { reason: string };
+      if (u.role === 'customer' && r.check_in <= today()) return err(409, 'too_late', 'Отменить можно только до дня заезда');
+      if (u.role !== 'customer' && r.check_out <= today()) return err(409, 'too_late', 'Отменить можно только до дня выезда');
+      if (u.role !== 'customer' && !reason) return err(422, 'validation', 'Укажите причину', { reason: 'Обязательное поле' });
       Object.assign(r, { status: 'cancelled', cancel_reason: reason || undefined, cancelled_at: new Date().toISOString(), version: r.version + 1 });
+      afterCommand();
       return HttpResponse.json(r);
     }),
   ),
@@ -269,7 +363,12 @@ export const handlers = [
   http.get(`${API}/notifications/unread-count`, ({ request }) =>
     withUser(request, null, () => HttpResponse.json({ unread: db.notifications.filter((n) => !n.read_at).length })),
   ),
-  http.get(`${API}/notifications`, ({ request }) => withUser(request, null, () => HttpResponse.json(paged(db.notifications)))),
+  http.get(`${API}/notifications`, ({ request }) =>
+    withUser(request, null, () => {
+      const unread = new URL(request.url).searchParams.get('unread') === 'true';
+      return HttpResponse.json(paged(request, db.notifications.filter((n) => !unread || !n.read_at)));
+    }),
+  ),
   http.post(`${API}/notifications/read-all`, ({ request }) =>
     withUser(request, null, () => {
       const marked = db.notifications.filter((n) => !n.read_at).length;

@@ -53,7 +53,7 @@ function url(path: string, query?: Record<string, unknown>): string {
 
 async function refreshSession(): Promise<Session | null> {
   try {
-    const res = await fetch(url('/auth/refresh'), { method: 'POST', credentials: 'same-origin' });
+    const res = await fetch(url('/auth/refresh'), { method: 'POST', credentials: 'include' });
     if (!res.ok) return null;
     return (await res.json()) as Session;
   } catch {
@@ -104,7 +104,8 @@ async function send(path: string, opts: RequestOptions): Promise<Response> {
       method: opts.method ?? 'GET',
       headers,
       body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
-      credentials: 'same-origin',
+      // refresh-cookie tf_refresh (path /api/auth) должна уходить и при CORS.
+      credentials: 'include',
     });
   } catch {
     throw new ApiError(0, 'network', 'Нет связи с сервером');

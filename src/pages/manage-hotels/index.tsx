@@ -1,13 +1,15 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useUnit } from 'effector-react';
-import { api } from '@/shared/api/endpoints';
+import { api, fetchAll } from '@/shared/api/endpoints';
 import { createRequest } from '@/shared/lib/request';
 import { HotelCard } from '@/entities/hotel/HotelCard';
 import { $role } from '@/entities/session/model';
 import { Alert, Empty, Spinner } from '@/shared/ui';
 
-export const managedQuery = createRequest((_: void) => api.managedHotels({ include_inactive: true, page_size: 100 }));
+export const managedQuery = createRequest((_: void) =>
+  fetchAll((page, page_size) => api.managedHotels({ include_inactive: true, page, page_size })),
+);
 
 export default function ManageHotelsPage() {
   const [data, pending, error, load, role] = useUnit([managedQuery.$data, managedQuery.$pending, managedQuery.$error, managedQuery.start, $role]);
