@@ -109,7 +109,12 @@ p {
 .grid {
   display: grid;
   gap: 24px;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
+}
+.stats {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
 }
 .spacer {
   flex: 1;
@@ -327,19 +332,38 @@ select.neu-input {
   overflow-x: auto;
 }
 
-/* ---------- шапка ---------- */
-.header {
-  padding-top: 16px;
-  padding-bottom: 16px;
+/* ---------- каркас: боковое меню + контент ---------- */
+.shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
 }
-.header .bar {
+.main {
+  min-width: 0;
+  padding: 0 32px;
+  max-width: 1180px;
+  width: 100%;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 18px;
+  background: var(--bg);
+  box-shadow: 6px 0 16px var(--dark);
+}
+.sidebar-head {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 12px 18px;
-  border-radius: 20px;
-  box-shadow: var(--raise);
+  justify-content: space-between;
+}
+.sidebar-close {
+  display: none;
 }
 .logo {
   font-weight: 800;
@@ -352,21 +376,69 @@ select.neu-input {
 .logo b {
   color: var(--accent);
 }
+
 .nav {
   display: flex;
+  flex-direction: column;
   gap: 6px;
-  flex-wrap: wrap;
 }
 .nav a {
-  padding: 8px 14px;
+  padding: 10px 14px;
   border-radius: 12px;
   color: var(--text);
   font-weight: 700;
+}
+.nav a:hover {
+  color: var(--accent);
 }
 .nav a.active {
   box-shadow: var(--inset-sm);
   color: var(--accent);
 }
+
+.sidebar-user {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+}
+.user-name {
+  font-weight: 800;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.user-role {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.demo-panel {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+}
+.demo-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+.demo-accounts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.demo-accounts li {
+  display: flex;
+  flex-direction: column;
+  overflow-wrap: anywhere;
+}
+
 .counter {
   display: inline-grid;
   place-items: center;
@@ -377,6 +449,75 @@ select.neu-input {
   font-size: 12px;
   color: #fff;
   background: var(--accent);
+}
+
+.topbar {
+  display: none;
+}
+.burger {
+  position: relative;
+  font-size: 18px;
+}
+.burger .dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.sidebar-backdrop {
+  display: none;
+}
+body.no-scroll {
+  overflow: hidden;
+}
+
+/* Планшет и телефон: меню выезжает слева по кнопке. */
+@media (max-width: 1023px) {
+  .shell {
+    display: block;
+  }
+  .main {
+    padding: 0 16px;
+    margin: 0 auto;
+  }
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--bg);
+    box-shadow: 0 4px 12px var(--dark);
+  }
+  .sidebar {
+    position: fixed;
+    z-index: 20;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: min(300px, 86vw);
+    height: auto;
+    transform: translateX(-105%);
+    transition: transform 0.22s ease;
+  }
+  .sidebar.open {
+    transform: none;
+  }
+  .sidebar-close {
+    display: inline-flex;
+  }
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    background: rgba(40, 50, 70, 0.3);
+  }
 }
 
 .modal-backdrop {
@@ -390,22 +531,105 @@ select.neu-input {
 }
 .modal {
   width: min(520px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
 }
 
 .form-grid {
   display: grid;
   gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
 }
 
 @media (max-width: 640px) {
   h1 {
     font-size: 24px;
   }
+  h2 {
+    font-size: 20px;
+  }
+  .page {
+    padding: 20px 0 48px;
+  }
   .neu-card {
     padding: 16px;
   }
-  .header .bar {
-    padding: 10px 12px;
+  .grid {
+    gap: 16px;
+  }
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .stats .neu-inset {
+    padding: 12px;
+  }
+  .tabs {
+    width: 100%;
+  }
+  .tabs .neu-btn {
+    flex: 1;
+    white-space: normal;
+  }
+  .row-between > .row {
+    width: 100%;
+  }
+  .modal-backdrop {
+    align-items: end;
+    padding: 0;
+  }
+  .modal {
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+    max-height: 90vh;
+  }
+
+  /* Таблицы на телефоне превращаются в карточки: подпись колонки из data-label. */
+  .table-wrap {
+    overflow: visible;
+  }
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+    width: 100%;
+  }
+  .table thead {
+    display: none;
+  }
+  .table {
+    border-spacing: 0;
+  }
+  .table tr {
+    margin-bottom: 14px;
+    padding: 12px;
+    border-radius: 14px;
+    box-shadow: var(--raise-sm);
+  }
+  .table td {
+    box-shadow: none;
+    padding: 6px 0;
+    border-radius: 0 !important;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .table td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .table td > select {
+    max-width: 60%;
+  }
+  .table td .cell-text {
+    text-align: right;
+  }
+  .table td {
+    overflow-wrap: anywhere;
   }
 }

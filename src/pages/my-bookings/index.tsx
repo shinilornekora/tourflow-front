@@ -31,7 +31,7 @@ export default function MyBookingsPage() {
         />
       </div>
       {summary && (
-        <div className="grid" aria-label="Сводка по заказам" role="group">
+        <div className="stats" aria-label="Сводка по заказам" role="group">
           <Stat label="Предстоит поездок" value={summary.upcoming} />
           <Stat label="Сейчас в поездке" value={summary.in_progress} />
           <Stat label="Завершено" value={summary.completed} />

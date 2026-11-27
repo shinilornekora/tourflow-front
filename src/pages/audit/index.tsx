@@ -54,10 +54,10 @@ export default function AuditPage() {
             <tbody>
               {data.items.map((r) => (
                 <tr key={r.id}>
-                  <td>{formatDateTime(r.at)}</td>
-                  <td>{actor(r)}</td>
-                  <td>{actionLabel[r.action] ?? r.action}</td>
-                  <td className="muted" style={{ fontSize: 12 }}>
+                  <td data-label="Когда">{formatDateTime(r.at)}</td>
+                  <td data-label="Кто">{actor(r)}</td>
+                  <td data-label="Действие">{actionLabel[r.action] ?? r.action}</td>
+                  <td data-label="Объект" className="muted" style={{ fontSize: 12 }}>
                     {r.entity_id}
                   </td>
                 </tr>

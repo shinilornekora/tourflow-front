@@ -54,7 +54,7 @@ export default function ManageBookingsPage() {
         </div>
       </Card>
       {summary && (
-        <div className="grid" role="group" aria-label="Сводка по броням">
+        <div className="stats" role="group" aria-label="Сводка по броням">
           <Stat label="Подтверждено" value={summary.confirmed} />
           <Stat label="Предстоит заездов" value={summary.upcoming} />
           <Stat label="Отменено" value={summary.cancelled} />

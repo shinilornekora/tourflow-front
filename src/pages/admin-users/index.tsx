@@ -76,14 +76,16 @@ export default function UsersPage() {
             <tbody>
               {users.map((u) => (
                 <tr key={u.id}>
-                  <td>
-                    <b>{u.full_name}</b>
-                    <div className="muted">{u.email}</div>
+                  <td data-label="Пользователь">
+                    <div className="cell-text">
+                      <b>{u.full_name}</b>
+                      <div className="muted">{u.email}</div>
+                    </div>
                   </td>
-                  <td className="muted" style={{ fontSize: 12 }}>
+                  <td data-label="ID" className="muted" style={{ fontSize: 12 }}>
                     {u.id}
                   </td>
-                  <td>
+                  <td data-label="Роль">
                     <select
                       className="neu-input"
                       aria-label={`Роль ${u.email}`}

@@ -2,6 +2,7 @@ import { StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { routes } from '@/app/routes';
+import { SidebarSlot } from '@/app/sidebarSlot';
 import '@/app/styles.css';
 
 // На github.io приложение живёт в подпапке /tourflow-front/.
@@ -22,8 +23,9 @@ async function boot() {
   }
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      {banner}
-      <RouterProvider router={router} />
+      <SidebarSlot.Provider value={banner}>
+        <RouterProvider router={router} />
+      </SidebarSlot.Provider>
     </StrictMode>,
   );
 }
