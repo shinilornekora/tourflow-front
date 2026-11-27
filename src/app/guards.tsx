@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useUnit } from 'effector-react';
-import { $role, $status, hasRole } from '@/entities/session/model';
+import { $role, $status, hasRole } from '@/entities/session';
 import type { Role } from '@/shared/api/types';
 import { Spinner } from '@/shared/ui';
 

@@ -5,7 +5,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { routes } from '@/app/routes';
 import { db } from './gateway';
 import { users } from './fixtures';
-import { SESSION_HINT } from '@/entities/session/model';
+import { SESSION_HINT } from '@/entities/session';
 
 /**
  * Рендерит всё приложение в изолированном scope Effector:

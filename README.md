@@ -51,8 +51,8 @@ npm run coverage
 
 | Требование                                                                  | Где                                                                                                                                                                                                                            |
 | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Роли и разный интерфейс                                                     | Меню и кнопки зависят от роли (`app/Layout.tsx`), гарды маршрутов `RequireAuth`, `RequireRole` (`app/guards.tsx`)                                                                                                              |
-| Клиент не видит занятые номера, админ не бронирует, отмена только до заезда | `pages/hotel` (`visibleOffers`, кнопка брони только у клиента), `pages/my-bookings` (`canCustomerCancel`)                                                                                                                      |
+| Роли и разный интерфейс                                                     | Меню и кнопки зависят от роли (`widgets/sidebar`), гарды маршрутов `RequireAuth`, `RequireRole` (`app/guards.tsx`)                                                                                                             |
+| Клиент не видит занятые номера, админ не бронирует, отмена только до заезда | `widgets/room-offers` (`visibleOffers`, кнопка брони только у клиента), `entities/reservation/rules.ts` (`canCustomerCancel`)                                                                                                  |
 | Создание, получение, изменение, удаление                                    | Отели и типы номеров (создать, изменить, отключить или в архив), назначение и снятие менеджеров, брони (создать, отменить)                                                                                                     |
 | Фильтры, сортировка, пагинация                                              | Каталог отелей: поиск, город, звёзды, сортировка, страницы; фильтры броней у менеджера                                                                                                                                         |
 | Страницы                                                                    | Регистрация, вход, 404 и страница ошибки роутера, личный кабинет, список отелей, страница отеля, создание и редактирование отеля (админ), «Мои заказы» (корзина клиента), плюс брони отелей, журнал, уведомления, пользователи |
@@ -64,11 +64,20 @@ npm run coverage
 ```
 src/
   app/        маршруты (createBrowserRouter), гарды ролей, layout, стили-неоморфизм
-  pages/      страницы; у сложных рядом model.ts на Effector
-  entities/   session, notification, карточки отеля и брони
+  pages/      тонкие страницы: собирают виджеты и фичи под маршрут
+  widgets/    самостоятельные блоки: sidebar, hotel-catalog, room-offers, bookings-summary,
+              my-reservations, hotel-reservations, hotel-editor, users-table, audit-log
+  features/   действия пользователя: auth-login/register/logout, profile-edit,
+              profile-change-password, hotel-filter, booking-check-availability,
+              booking-create, booking-cancel, booking-cancel-by-staff, hotel-edit,
+              hotel-toggle-status, hotel-assign-manager, room-type-edit, room-type-archive,
+              user-change-role, notifications-mark-read
+  entities/   session, user, hotel, reservation, notification: данные, модели, карточки
   shared/     api (клиент + эндпоинты + типы), lib, ui-кит
   test/       MSW-gateway, фикстуры, интеграционные тесты
 ```
+
+Слой может импортировать только нижние слои, а слайс открывает наружу только свой `index.ts`. Внутри слоя слайсы друг друга не импортируют (исключение: сущности читают `entities/session`). Правила проверяет `eslint-plugin-boundaries` в `eslint.config.mjs`, так что нарушение ломает `npm run lint` и pre-commit.
 
 ## Модель чтения броней
 

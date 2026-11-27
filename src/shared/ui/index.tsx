@@ -202,3 +202,4 @@ export function Stat({ label, value }: { label: string; value: ReactNode }) {
     </div>
   );
 }
+export { SidebarSlot } from './sidebarSlot';

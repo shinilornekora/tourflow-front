@@ -2,7 +2,7 @@ import { StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { routes } from '@/app/routes';
-import { SidebarSlot } from '@/app/sidebarSlot';
+import { SidebarSlot } from '@/shared/ui';
 import '@/app/styles.css';
 
 // На github.io приложение живёт в подпапке /tourflow-front/.
